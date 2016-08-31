@@ -1,0 +1,5 @@
+#
+# Override overly protective .htaccess in webroot for letsencryt
+#
+RewriteEngine On
+Satisfy Any
