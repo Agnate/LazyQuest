@@ -7,6 +7,7 @@ namespace Agnate\RPG;
 class Guild extends Entity {
 
   public $gid;
+  public $slack_id;
   public $name;
   public $icon;
   public $team_id;

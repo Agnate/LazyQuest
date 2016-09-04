@@ -1,6 +1,8 @@
 <?php
 
-use Agnate\RPG\Entity;
+use \PDO;
+use \Agnate\RPG\App;
+use \Agnate\RPG\Entity;
 
 namespace Agnate\RPG;
 
@@ -18,5 +20,5 @@ class Team extends Entity {
   static $partials = array('team_name');
   static $primary_key = 'tid';
   static $relationships = array();
-
+  
 }

@@ -3,16 +3,7 @@
 // "devristo/phpws": "dev-master"
 // "frlnc/php-slack": "*"
 
-require_once('config.php');
-require_once('includes/db.inc');
-require_once(GAME_SERVER_ROOT . '/vendor/autoload.php');
-
-// Set up an autoloader to load all classes.
-spl_autoload_register(function ($class) {
-    // Convert namespace to full file path
-    $class = str_replace('\\', '/', $class);
-    include(GAME_SERVER_ROOT . '/src/' . $class . '.php');
-});
+require_once('bootstrap.php');
 
 // Include game source.
 use Agnate\RPG\Session;
@@ -34,6 +25,9 @@ use Frlnc\Slack\Core\Commander;
 
 $interactor = new CurlInteractor;
 $interactor->setResponseFactory(new SlackResponseFactory);
+
+// Need to set up a Commander for each team.
+$teams = Agnate\RPG\Team::loadMultiple();
 
 $commander = new Commander(SLACK_OAUTH_CLIENT_SECRET, $interactor);
 
@@ -82,7 +76,7 @@ $loop->addPeriodicTimer(34, 'timer_leaderboard_standings');
 
 
 $logger = new \Zend\Log\Logger();
-$writer = new Zend\Log\Writer\Stream("php://output");
+$writer = new \Zend\Log\Writer\Stream("php://output");
 $logger->addWriter($writer);
 
 $client = new \Devristo\Phpws\Client\WebSocket ($url, $loop, $logger);

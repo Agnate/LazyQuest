@@ -14,9 +14,9 @@ class Message extends EntityBasic {
   public $attachments;
 
   // For messages with buttons:
-  public $response_type; // string
-  public $replace_original; // boolean
-  public $delete_original; // boolean
+  public $response_type = 'in_channel';
+  // public $replace_original; // boolean - ONLY used when using buttons
+  // public $delete_original; // boolean - ONLY used when using buttons
 
   // Set any field keys that are expecting arrays.
   static $fields_array = array('attachments');
@@ -55,6 +55,7 @@ class Message extends EntityBasic {
     $payload = call_user_func('get_object_vars', $this);
     // Remove the variables we don't want to serialize to Slack.
     unset($payload['channel']);
+    if (empty($payload['attachments'])) unset($payload['attachments']);
 
     return $payload;
   }

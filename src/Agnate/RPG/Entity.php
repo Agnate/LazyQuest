@@ -93,11 +93,11 @@ class Entity extends EntityBasic {
 
   /**
    * Loads multiple rows of data based on the query $data provided.
-   * @param $data An array of exact values that the query will search for.
+   * @param $data An array of exact values that the query will search for. Use empty Array to get all rows.
    * @param $special The text here is tacted onto the end of the query. It's useful for things like "order by" and "limit".
    * @return Array Returns an array of entities typed as the class calling it. (Example: Guild::load_multiple() will return an array of Guild entities).
    */
-  public static function load_multiple ($data, $special = "") {
+  public static function loadMultiple ($data, $special = "") {
     // If we don't have a database table, we're done.
     if (empty(static::$db_table)) return FALSE;
 

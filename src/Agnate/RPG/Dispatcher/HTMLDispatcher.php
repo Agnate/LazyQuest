@@ -22,8 +22,8 @@ class HTMLDispatcher implements DispatcherInterface {
     $response = array();
     
     // Clone messages for multiple channels.
-    if ($message->channel->channel_type == \Agnate\RPG\Message\Channel::TYPE_PUBLIC) {
-      $response[] = $message->render($message->channel->channel_type, SLACK_BOT_PUBLIC_CHANNEL);
+    if ($message->channel->type == \Agnate\RPG\Message\Channel::TYPE_PUBLIC) {
+      $response[] = $message->render($message->channel->type, \Agnate\RPG\Message\Channel::TYPE_PUBLIC);
     }
     else if ($message->channel == \Agnate\RPG\Message\Channel::TYPE_DIRECT) {
       // Loop through all Guilds and make a message copy.
