@@ -1,5 +1,6 @@
 <?php
 use \Kint;
+use Agnate\RPG\App;
 use Agnate\RPG\Trigger;
 use Agnate\RPG\Action\GreetingAction;
 
@@ -11,8 +12,14 @@ class Session {
   public $slack_request_data;
   public $response;
   public $triggers = array();
-  
+
+  /**
+   * Create a new Session.
+   */
   function __construct() {
+    // Start the App if it hasn't started already.
+    App::start();
+
     // Register all the triggers.
     $this->triggers[] = new Trigger (array('hello'), '\Agnate\RPG\Action\GreetingAction');
   }

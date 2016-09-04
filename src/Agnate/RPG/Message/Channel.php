@@ -1,6 +1,6 @@
 <?php
 
-use Agnate\RPG\Core\Guild;
+use Agnate\RPG\Guild;
 
 namespace Agnate\RPG\Message;
 
@@ -21,10 +21,10 @@ class Channel {
    */
   function __construct($channel_type, $guilds = NULL) {
     if (!in_array($channel_type, static::$types)) throw new \Exception ('Channel type must one of the types specified in Channel, ' . $channel_type . ' given.');
-    if (!empty($guilds) && !is_array($guilds) && !($guilds instanceof \Agnate\RPG\Core\Guild)) throw new \Exception ('Channel guilds must be NULL, an Array of Guilds, or an individual Guild, ' . $guilds . ' given.');
+    if (!empty($guilds) && !is_array($guilds) && !($guilds instanceof \Agnate\RPG\Guild)) throw new \Exception ('Channel guilds must be NULL, an Array of Guilds, or an individual Guild, ' . $guilds . ' given.');
 
     // If this is one Guild, put in an array.
-    if (!empty($guilds) && $guilds instanceof \Agnate\RPG\Core\Guild) {
+    if (!empty($guilds) && $guilds instanceof \Agnate\RPG\Guild) {
       $guilds = array($guilds);
     }
 

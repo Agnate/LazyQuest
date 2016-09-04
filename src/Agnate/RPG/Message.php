@@ -1,13 +1,13 @@
 <?php
 
-use Agnate\RPG\Entity;
-use Agnate\RPG\Utils;
+use Agnate\RPG\App;
+use Agnate\RPG\EntityBasic;
 use Agnate\RPG\Message\Attachment;
 use Agnate\RPG\Message\Channel;
 
 namespace Agnate\RPG;
 
-class Message extends Entity {
+class Message extends EntityBasic {
 
   public $channel; // Channel the Message should render to.
   public $text;
@@ -66,7 +66,7 @@ class Message extends Entity {
     $response = array();
     $response[] = '<div class="message">';
     $response[] = '<h1 class="' . $channel_type . '" channel-type="' . $channel_type . '">Channel: ' . $channel_name . '</h1>';
-    $response[] = '<p>' . Utils::convertMarkup($this->text) . '</p>';
+    $response[] = '<p>' . App::convertMarkup($this->text) . '</p>';
     $response[] = '<div class="attachments">';
 
     foreach ($this->attachments as $attachment) {

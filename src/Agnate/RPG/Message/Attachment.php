@@ -1,12 +1,13 @@
 <?php
 
-use Agnate\RPG\Entity;
+use Agnate\RPG\App;
+use Agnate\RPG\EntityBasic;
 use Agnate\RPG\Message\AttachmentButton;
 use Agnate\RPG\Message\AttachmentField;
 
 namespace Agnate\RPG\Message;
 
-class Attachment extends \Agnate\RPG\Entity {
+class Attachment extends \Agnate\RPG\EntityBasic {
 
   // Slack's attachment options and data go here.
   public $fallback;
@@ -115,7 +116,7 @@ class Attachment extends \Agnate\RPG\Entity {
    */
   public function render () {
     $response = array();
-    if (!empty($this->pretext)) $response[] = '<p>' . \Agnate\RPG\Utils::convertMarkup($this->pretext) . '</p>';
+    if (!empty($this->pretext)) $response[] = '<p>' . \Agnate\RPG\App::convertMarkup($this->pretext) . '</p>';
     if (!empty($this->fallback)) $response[] = '<div class="fallback">Fallback: ' . $this->fallback . '</div>';
 
     $response[] = '<div class="attachment"' . (!empty($this->color) ? ' style="border-color: ' . $this->color . ';"' : '') . '>';
@@ -139,7 +140,7 @@ class Attachment extends \Agnate\RPG\Entity {
         . '</h2>';
     }
 
-    if (!empty($this->text)) $response[] = '<p>' . \Agnate\RPG\Utils::convertMarkup($this->text) . '</p>';
+    if (!empty($this->text)) $response[] = '<p>' . \Agnate\RPG\App::convertMarkup($this->text) . '</p>';
 
     if (!empty($this->fields)) {
       $response[] = '<div class="fields">';

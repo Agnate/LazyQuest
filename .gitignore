@@ -1,6 +1,8 @@
+backups
 config.php
 composer.lock
-vendor
 docs
-log
 letsencrypt
+log
+public/.well-known
+vendor

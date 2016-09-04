@@ -1,6 +1,6 @@
 <?php
 
-use Agnate\RPG\Entity;
+use Agnate\RPG\EntityBasic;
 use Agnate\RPG\Action\ActionInterface;
 use Agnate\RPG\Message;
 use Agnate\RPG\Message\Attachment;
@@ -9,7 +9,7 @@ use Agnate\RPG\Message\AttachmentButtonConfirm;
 
 namespace Agnate\RPG\Action;
 
-class GreetingAction extends \Agnate\RPG\Entity implements ActionInterface {
+class GreetingAction extends \Agnate\RPG\EntityBasic implements ActionInterface {
 
   public static function perform ($args) {
     return new \Agnate\RPG\Message (array(

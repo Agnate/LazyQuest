@@ -1,13 +1,14 @@
 <?php
 
-use Agnate\RPG\Entity;
+use Agnate\RPG\App;
+use Agnate\RPG\EntityBasic;
 
 namespace Agnate\RPG\Message;
 
 /**
  * Mimics the settings of Slack's attachment action button confirm settings.
  */
-class AttachmentButtonConfirm extends \Agnate\RPG\Entity {
+class AttachmentButtonConfirm extends \Agnate\RPG\EntityBasic {
 
   // Slack's attachment options and data go here.
   public $title;
@@ -38,7 +39,7 @@ class AttachmentButtonConfirm extends \Agnate\RPG\Entity {
     $response = array();
     $response[] = '<div class="attachment-button-confirm" ' . (!empty($uniqueid) ? ' id="' . $uniqueid . '"' : '') . '>';
     $response[] = '<span class="alert-title">' . $this->title . '</span><br>';
-    $response[] = '<span class="alert-text">' . \Agnate\RPG\Utils::convertMarkup($this->text) . '</span><br>';
+    $response[] = '<span class="alert-text">' . \Agnate\RPG\App::convertMarkup($this->text) . '</span><br>';
     $response[] = '<input class="alert-ok" type="button" value="' . $this->ok_text . '">';
     $response[] = '<input class="alert-dismiss" type="button" value="' . $this->dismiss_text . '">';
     $response[] = '</div>';

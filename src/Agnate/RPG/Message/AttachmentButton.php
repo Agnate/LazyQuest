@@ -1,13 +1,13 @@
 <?php
 
-use Agnate\RPG\Entity;
+use Agnate\RPG\EntityBasic;
 
 namespace Agnate\RPG\Message;
 
 /**
  * Mimics the settings of Slack's attachment actions button.
  */
-class AttachmentButton extends \Agnate\RPG\Entity {
+class AttachmentButton extends \Agnate\RPG\EntityBasic {
 
   // Slack's attachment options and data go here.
   public $confirm;

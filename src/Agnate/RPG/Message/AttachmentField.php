@@ -1,13 +1,14 @@
 <?php
 
-use Agnate\RPG\Entity;
+use Agnate\RPG\App;
+use Agnate\RPG\EntityBasic;
 
 namespace Agnate\RPG\Message;
 
 /**
  * Mimics the settings of Slack's attachment fields.
  */
-class AttachmentField extends \Agnate\RPG\Entity {
+class AttachmentField extends \Agnate\RPG\EntityBasic {
 
   // Slack's attachment options and data go here.
   public $title;
@@ -34,7 +35,7 @@ class AttachmentField extends \Agnate\RPG\Entity {
     $response = array();
     $response[] = '<div class="attachment-field' . ($this->short ? ' short' : '') . '">';
     $response[] = '<strong>' . $this->title . '</strong><br>';
-    $response[] = \Agnate\RPG\Utils::convertMarkup($this->value);
+    $response[] = \Agnate\RPG\App::convertMarkup($this->value);
     $response[] = '</p>';
     $response[] = '</div>';
     

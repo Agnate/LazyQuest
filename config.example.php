@@ -6,6 +6,7 @@ define('GAME_SERVER_ROOT', '/your/root/folder');
 define('GAME_SERVER_PUBLIC_URL', 'https://your.domain');
 
 // Slack Webhook.
+define('SLACK_OAUTH_URL', "https://slack.com/api/oauth.access");
 define('SLACK_OAUTH_CLIENT_ID', "XXXXXXXXXX.XXXXXXXXXXX");
 define('SLACK_OAUTH_CLIENT_SECRET', "XXXXXXXXXXXXXXXXXX");
 define('SLACK_BOT_USERNAME', 'SLCKSLSH');
