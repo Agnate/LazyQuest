@@ -1,1 +1,1 @@
-#SLCK&SLSH — Slack-exclusive RPG game
+#Lazy Quest — Slack-exclusive RPG game
