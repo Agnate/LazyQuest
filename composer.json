@@ -8,6 +8,7 @@
   "require": {
     "raveren/kint": "v0.9",
     "frlnc/php-slack": "*",
-    "devristo/phpws": "dev-master"
+    "devristo/phpws": "dev-master",
+    "zendframework/zend-db": "2.*"
   }
 }

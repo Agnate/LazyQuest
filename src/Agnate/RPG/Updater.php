@@ -57,16 +57,16 @@ class Updater extends Entity {
    * Initialize the database for Updater as it is necessary to construct the entire database.
    */
   protected static function init () {
-    if (App::database()->tableExists(static::$db_table)) return;
+    // If there's no table to store database versions, create it.
+    if (!App::database()->tableExists(static::$db_table)) {
+      $fields = array();
+      $fields[] = "uid INT(11) UNSIGNED AUTO_INCREMENT";
+      $fields[] = "version VARCHAR(30) NOT NULL";
+      $fields[] = "updated INT(10) UNSIGNED NOT NULL";
 
-    // If there's no table, create it.
-    $fields = array();
-    $fields[] = "uid INT(11) UNSIGNED AUTO_INCREMENT";
-    $fields[] = "version VARCHAR(30) NOT NULL";
-    $fields[] = "updated INT(10) UNSIGNED NOT NULL";
-
-    // Make the database.
-    App::database()->createTable(static::$db_table, static::$primary_key, $fields);
+      // Make the database.
+      App::database()->createTable(static::$db_table, static::$primary_key, $fields);
+    }
   }
 
   /**

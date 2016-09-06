@@ -8,7 +8,11 @@ use \Kint;
 
 // Set up some user profiles.
 $profiles = array();
-$profiles['Steve'] = 'U2147483697';
+$profiles['Steve'] = array(
+  'user_name' => 'Steve',
+  'user_id' => 'U999999K',
+  'team_id' => 'T025KTDB7',
+);
 
 // Set some default parameters to set in the form.
 $data = array(
@@ -19,11 +23,13 @@ $data = array(
 if (isset($_GET['monkey123'])) {
   require_once('../../config.php');
   // $data['token'] = SLACK_TOKEN;
+  $data['type'] = 'message';
   $data['debug'] = 'true';
-  // $data['command'] = '/rpg';
+  // $data['team'] = 'T025KTDB7';
   // Set the default user.
   // $data['user_name'] = 'Steve';
-  // $data['user_id'] = $profiles['Steve'];
+  // $data['user'] = $profiles['Steve'];
+  // 'team' => 'T025KTDB7'
 }
 
 // token=1ZAIYgNxoSTO7ew2ntSYO0U9&user_id=U2147483697&user_name=Steve&forced_debug_mode=true&command=/rpg&text=test
@@ -46,12 +52,12 @@ if (isset($_GET['monkey123'])) {
 
     <div id="interface">
       <form id="interface-form" action="interface.php" method="POST">
-        <?php /* <select id="profile" name="profile">
+        <select id="profile" name="profile">
           <option id="profile-new" value="">- New -</option>
-          <?php foreach ($profiles as $name => $id): ?>
-            <option <?php print (isset($data['user_name']) && isset($profiles[$data['user_name']]) ? 'selected="selected"' : '') ?> value="<?php print $id; ?>"><?php print $name; ?></option>
+          <?php foreach ($profiles as $name => $info): ?>
+            <option <?php print (isset($data['user_name']) && isset($profiles[$data['user_name']]) ? 'selected="selected"' : '') ?> value="<?php print $info['user_id']; ?>"><?php print $name; ?></option>
           <?php endforeach; ?>
-        </select> */ ?>
+        </select>
         <input id="text" type="text" name="text" value="hello" />
 
         <?php foreach ($data as $key => $value): ?>

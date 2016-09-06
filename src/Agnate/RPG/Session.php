@@ -8,6 +8,7 @@ namespace Agnate\RPG;
 
 class Session {
 
+  public $data;
   public $debug = FALSE;
   public $slack_request_data;
   public $response;
@@ -28,8 +29,27 @@ class Session {
    * @return Array of Message instances.
    */
   public function run ($input, $slack_request_data = array()) {
+    /* Expecting:
+    $slack_request_data = array(
+      'slack_user_id' => $slack_user_id,
+      'slack_team_id' => $slack_team_id,
+      'input' => $text,
+    )
+    */
     $this->data = $slack_request_data;
     $this->debug = (isset($this->data['debug']) && $this->data['debug'] == 'true');
+
+    d($input);
+    d($slack_request_data);
+
+    /*
+    'type' => 'message',
+    'channel' => 'D286C33AR',
+    'user' => 'U0265JBJW',
+    'text' => 'hello',
+    'ts' => '1473045021.000013',
+    'team' => 'T025KTDB7',
+    */
 
     foreach ($this->triggers as $trigger) {
       // If the input triggers a command, run the action associated with the trigger.
@@ -43,7 +63,7 @@ class Session {
 
     // If there's no response, return the "no command found" response.
     if (empty($this->response)) {
-      // TODO
+      // TODO: Needs to return a nice Help text and in the form of a Message class.
       return 'NO COMMAND';
     }
 

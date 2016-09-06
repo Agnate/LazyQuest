@@ -10,6 +10,8 @@ namespace Agnate\RPG;
 class Message extends EntityBasic {
 
   public $channel; // Channel the Message should render to.
+  public $slack_channel;
+  public $as_user = TRUE;
   public $text;
   public $attachments;
 
@@ -55,7 +57,22 @@ class Message extends EntityBasic {
     $payload = call_user_func('get_object_vars', $this);
     // Remove the variables we don't want to serialize to Slack.
     unset($payload['channel']);
-    if (empty($payload['attachments'])) unset($payload['attachments']);
+    unset($payload['slack_channel']);
+    if (!empty($this->slack_channel)) $payload['channel'] = $this->slack_channel;
+
+    // Convert attachments.
+    unset($payload['attachments']);
+    // if (!empty($this->attachments)) {
+    //   $payload['attachments'] = array();
+    //   foreach ($this->attachments as $attachment) {
+    //     $payload['attachments'][] = $attachment->jsonSerialize();
+    //   }
+    // }
+
+    // Clear all of the NULL values.
+    foreach ($payload as $key => $value) {
+      if ($value === NULL) unset($payload[$key]);
+    }
 
     return $payload;
   }

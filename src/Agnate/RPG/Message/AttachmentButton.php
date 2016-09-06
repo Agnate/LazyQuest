@@ -50,6 +50,28 @@ class AttachmentButton extends \Agnate\RPG\EntityBasic {
   }
 
   /**
+   * Provided by JsonSerializable interface.
+   */
+  public function jsonSerialize() {
+    // Gets all of the public variables as a keyed array.
+    $payload = call_user_func('get_object_vars', $this);
+    // Remove the variables we don't want to serialize to Slack.
+    unset($payload['confirm']);
+    
+    // Render all of the fields, if there are any.
+    if (!empty($this->confirm)) {
+      $payload['confirm'] = $this->confirm->jsonSerialize();
+    }
+
+    // Clear all of the NULL values.
+    foreach ($payload as $key => $value) {
+      if ($value === NULL) unset($payload[$key]);
+    }
+
+    return $payload;
+  }
+
+  /**
    * Render out the HTML version.
    */
   public function render () {

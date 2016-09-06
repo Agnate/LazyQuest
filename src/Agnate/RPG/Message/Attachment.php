@@ -108,6 +108,11 @@ class Attachment extends \Agnate\RPG\EntityBasic {
       }
     }
 
+    // Clear all of the NULL values.
+    foreach ($payload as $key => $value) {
+      if ($value === NULL) unset($payload[$key]);
+    }
+
     return $payload;
   }
 

@@ -27,6 +27,15 @@ class Update_0_0_1 extends UpdateBase {
     $team_fields[] = "bot_access_token VARCHAR(255) NOT NULL";
     $queries[] = static::createTableStatement(\Agnate\RPG\Team::$db_table, \Agnate\RPG\Team::$primary_key, $team_fields);
 
+    // Create tables for Guild.
+    $guild_fields = array();
+    $guild_fields[] = "gid INT(11) UNSIGNED AUTO_INCREMENT";
+    $guild_fields[] = "slack_id VARCHAR(255) NOT NULL";
+    $guild_fields[] = "name VARCHAR(255) NOT NULL";
+    $guild_fields[] = "icon VARCHAR(255) NOT NULL";
+    $guild_fields[] = "team_id INT(11) NOT NULL";
+    $queries[] = static::createTableStatement(\Agnate\RPG\Guild::$db_table, \Agnate\RPG\Guild::$primary_key, $guild_fields);
+
     return $queries;
   }
 
