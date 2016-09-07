@@ -6,6 +6,7 @@ namespace Agnate\RPG\Action;
 
 class ActionData extends \Agnate\RPG\EntityBasic {
 
+  // Standard fields from Slack data.
   public $type;
   public $channel;
   public $user;
@@ -13,6 +14,16 @@ class ActionData extends \Agnate\RPG\EntityBasic {
   public $ts;
   public $team;
   public $debug;
+
+  // Additional variables for chat.update calls.
+  public $callback_id;
+  public $actions;
+  public $action_ts;
+  public $message_ts;
+  public $attachment_id;
+  public $token;
+  public $original_message;
+  public $response_url;
 
   // Autoloaded based on above data.
   protected $_guild;
@@ -26,6 +37,11 @@ class ActionData extends \Agnate\RPG\EntityBasic {
   function __construct ($data = array(), $autoload = TRUE) {
     // Assign data to instance properties.
     parent::__construct($data);
+
+    // Convert Arrays into a string.
+    if (is_array($this->channel)) $this->channel = $this->channel['id'];
+    if (is_array($this->team)) $this->team = $this->team['id'];
+    if (is_array($this->user)) $this->user = $this->user['id'];
 
     // Autoload extra data.
     if ($autoload) $this->autoload();
@@ -47,8 +63,9 @@ class ActionData extends \Agnate\RPG\EntityBasic {
    */
   public function guild () {
     // Load the Guild if available.
-    if (empty($this->_guild) && !empty($this->session_data['user'])) {
-      $this->_guild = \Agnate\RPG\Guild::load(array('slack_id' => $this->session_data['user']));
+    if (empty($this->_guild) && !empty($this->user)) {
+      $user_id = is_string($this->user) ? $this->user : $this->user['id'];
+      $this->_guild = \Agnate\RPG\Guild::load(array('slack_id' => $user_id));
       if (empty($this->_guild)) unset($this->_guild);
     }
   }
@@ -59,8 +76,9 @@ class ActionData extends \Agnate\RPG\EntityBasic {
    */
   public function team () {
     // Load the Team if available.
-    if (empty($this->_team) && !empty($this->session_data['team'])) {
-      $this->_team = \Agnate\RPG\Team::load(array('team_id' => $this->session_data['team']));
+    if (empty($this->_team) && !empty($this->team)) {
+      $team_id = is_string($this->team) ? $this->team : $this->team['id'];
+      $this->_team = \Agnate\RPG\Team::load(array('team_id' => $team_id));
       if (empty($this->_team)) unset($this->_team);
     }
   }

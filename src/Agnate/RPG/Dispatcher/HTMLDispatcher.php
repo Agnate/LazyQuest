@@ -31,7 +31,7 @@ class HTMLDispatcher implements DispatcherInterface {
         $response[] = $message->render($message->channel->type, $guild->getChannelName());
       }
     }
-    else if ($message->channel->type == \Agnate\RPG\Message\Channel::TYPE_REPLY) {
+    else if ($message->channel->type == \Agnate\RPG\Message\Channel::TYPE_REPLY || $message->channel->type == \Agnate\RPG\Message\Channel::TYPE_UPDATE) {
       $response[] = $message->render($message->channel->type, $message->channel->channel_id);
     }
 

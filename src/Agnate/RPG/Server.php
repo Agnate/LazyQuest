@@ -34,7 +34,7 @@ class Server {
   /**
    * Initialize the server.
    */
-  function __construct() {
+  function __construct () {
     $this->interactor = new \Frlnc\Slack\Http\CurlInteractor;
     $this->interactor->setResponseFactory(new \Frlnc\Slack\Http\SlackResponseFactory);
     $this->commanders = array();
@@ -47,28 +47,13 @@ class Server {
   /**
    * Start all the server connections to Slack.
    */
-  public function start() {
+  public function start () {
     $this->teams = Team::loadMultiple(array());
 
     // Create a commander for each team.
     foreach ($this->teams as $team) {
-      // Create the basics we need for the connection.
-      $commander = new \Frlnc\Slack\Core\Commander($team->bot_access_token, $this->interactor);
-      $dispatcher = new \Agnate\RPG\Dispatcher\SlackDispatcher;
-      
       // Create the connection.
-      $connection = new ServerConnection (array(
-        'server' => $this,
-        'team' => $team,
-        'commander' => $commander,
-        'dispatcher' => $dispatcher,
-      ));
-
-      // Start websocket connection.
-      $connection->connect();
-
-      // No errors, so add it to the list of viable connections.
-      $connections[$team->tid] = $connection;
+      $this->connect($team, TRUE);
 
       $this->logger->notice("Created a websocket connection for Team " . $team->team_id . " (tid: " . $team->tid . ").");
     }
@@ -85,9 +70,52 @@ class Server {
   }
 
   /**
+   * Primarily used when creating a response Server to handle Slack buttons.
+   * @param $team_id String team ID from Slack, used to create the ServerConnection.
+   * @param $payload Response data sent from Slack.
+   */
+  public function handle ($team_id, Array $payload) {
+    // Construct the ServerResponder so we can use the chat.update feature of bots.
+    $team = Team::load(array('team_id' => $team_id));
+
+    // Create the ServerConnection and link to the Team.
+    // Note: We do not start up the Server, we just need it to initialize the connection.
+    $connection = $this->connect($team, FALSE);
+
+    // Handle the response through the connection.
+    $connection->update($payload);
+  }
+
+  /**
+   * Connect a team to the server.
+   */
+  public function connect (Team $team, $start_websocket = TRUE) {
+    // Create the basics we need for the connection.
+    $commander = new \Frlnc\Slack\Core\Commander($team->bot_access_token, $this->interactor);
+    $dispatcher = new \Agnate\RPG\Dispatcher\SlackDispatcher;
+    
+    // Create the connection.
+    $connection = new ServerConnection (array(
+      'server' => $this,
+      'team' => $team,
+      'commander' => $commander,
+      'dispatcher' => $dispatcher,
+    ));
+
+    // Start websocket connection.
+    if ($start_websocket) $connection->connect();
+    else $connection->init();
+
+    // No errors, so add it to the list of viable connections.
+    $this->connections[$team->tid] = $connection;
+
+    return $connection;
+  }
+
+  /**
    * Start up the logger if not already started.
    */
-  protected function startLogger() {
+  protected function startLogger () {
     if (!empty($this->logger)) return;
 
     // Create logger.

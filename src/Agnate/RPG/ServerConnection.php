@@ -44,12 +44,20 @@ class ServerConnection extends EntityBasic {
   }
 
   /**
-   * Fetch all data and connect to the websocket for this team.
+   * Fetch all data to prepare for a websocket connection. If not using websocket (just want to send messages via commander), use this instead of connect().
    */
-  public function connect() {
+  public function init() {
     // Fetch all of the data we need before starting the RTM connection.
     $this->fetchChannels();
     $this->fetchUsers();
+  }
+
+  /**
+   * Fetch all data and connect to the websocket for this team.
+   */
+  public function connect() {
+    // Initialize the connection by fetching data we need.
+    $this->init();
 
     // Create the connection.
     $this->createConnection();
@@ -59,6 +67,9 @@ class ServerConnection extends EntityBasic {
     $this->test();
   }
 
+  /**
+   * Initiate the websocket client and watch for responses.
+   */
   protected function startWebsocketServer() {
     // Create the websocket client.
     $this->websocket_client = new \Devristo\Phpws\Client\WebSocket ($this->websocket_url, $this->server->websocket_loop, $this->server->logger);
@@ -161,6 +172,65 @@ class ServerConnection extends EntityBasic {
     }
 
     // Dispatch the messages.
+    foreach ($messages as $message) {
+      $this->dispatcher->dispatch($message);
+    }
+  }
+
+  /**
+   * Process a Slack button response.
+   */
+  public function update (Array $data) {
+    /*$data contains:
+    {
+      "actions": [
+        {
+          "name": "recommend",
+          "value": "yes"
+        }
+      ],
+      "callback_id": "comic_1234_xyz",
+      "team": {
+        "id": "T47563693",
+        "domain": "watermelonsugar"
+      },
+      "channel": {
+        "id": "C065W1189",
+        "name": "forgotten-works"
+      },
+      "user": {
+        "id": "U045VRZFT",
+        "name": "brautigan"
+      },
+      "action_ts": "1458170917.164398",
+      "message_ts": "1458170866.000004",
+      "attachment_id": "1",
+      "token": "xAB3yVzGS4BQ3O9FACTa8Ho4",
+      "original_message": "{\"text\":\"New comic book alert!\",\"attachments\":[{\"title\":\"The Further Adventures of Slackbot\",\"fields\":[{\"title\":\"Volume\",\"value\":\"1\",\"short\":true},{\"title\":\"Issue\",\"value\":\"3\",\"short\":true}],\"author_name\":\"Stanford S. Strickland\",\"author_icon\":\"https://api.slack.com/img/api/homepage_custom_integrations-2x.png\",\"image_url\":\"http://i.imgur.com/OJkaVOI.jpg?1\"},{\"title\":\"Synopsis\",\"text\":\"After @episod pushed exciting changes to a devious new branch back in Issue 1, Slackbot notifies @don about an unexpected deploy...\"},{\"fallback\":\"Would you recommend it to customers?\",\"title\":\"Would you recommend it to customers?\",\"callback_id\":\"comic_1234_xyz\",\"color\":\"#3AA3E3\",\"attachment_type\":\"default\",\"actions\":[{\"name\":\"recommend\",\"text\":\"Recommend\",\"type\":\"button\",\"value\":\"recommend\"},{\"name\":\"no\",\"text\":\"No\",\"type\":\"button\",\"value\":\"bad\"}]}]}",
+      "response_url": "https://hooks.slack.com/actions/T47563693/6204672533/x7ZLaiVMoECAW50Gw1ZYAXEM"
+    }
+    
+
+    See: https://api.slack.com/docs/message-buttons#overview
+
+    Steps:
+    - Validate that payload is real (use SLACK_OAUTH_VERIFICATION config to compare to "token")
+    - Identify user/Guild who sent the message.
+    - Retrieve the current command in queue (this likely needs to be stored in
+        database - you can use the "callback_id" that's sent in the original message,
+        which you can grab below).
+    - Process the button they clicked (the "actions value").
+    - Update the current command in queue with new results (if any).
+    - Send back a payload update to refresh the buttons however necessary.
+    */
+
+    // Start a new Session.
+    $session = new \Agnate\RPG\Session;
+
+    // Run our data through to see if anything should get updated.
+    $messages = $session->update($data);
+
+    // Dispatch any messages through the connection.
     foreach ($messages as $message) {
       $this->dispatcher->dispatch($message);
     }

@@ -66,4 +66,29 @@ class Session {
     return $this->response;
   }
 
+  /**
+   * Make an update to an existing Session entry.
+   * @param $data Array of all of the data passed by Slack. See: https://api.slack.com/docs/message-buttons#how_to_respond_to_message_button_actions
+   */
+  public function update(Array $data) {
+    // Convert this to an ActionData instance to make it easier to manage.
+    $this->data = new Action\ActionData ($data);
+
+    // NOTE: We will need to add some additional fields for all Messages that are Channel::TYPE_UPDATE:
+    //  'ts' -> This is the timestamp of the original message, which we need. Use $payload['message_ts'] as the value.
+    //  'attachments_clear' -> Set this to TRUE to clear out any attachments that might be there on original message when it gets updated.
+    //  'channel' -> This must always be Channel::TYPE_UPDATE and we use the $this->data->channel as the value.
+
+
+    // Create temporary message.
+    return array(
+      new Message (array(
+        'channel' => new Message\Channel (Message\Channel::TYPE_UPDATE, NULL, $this->data->channel),
+        'text' => "Woo! Action chosen: " . $this->data->actions[0]['name'],
+        'ts' => $this->data->message_ts,
+        'attachments_clear' => TRUE,
+      ))
+    );
+  }
+
 }
