@@ -10,7 +10,7 @@ namespace Agnate\RPG;
 
 class ServerConnection extends EntityBasic {
 
-  public $server;
+  public $server; // Can hold a Server or ServerResponder instance.
   public $commander;
   public $dispatcher;
   public $team;
@@ -19,7 +19,6 @@ class ServerConnection extends EntityBasic {
   public $users;
 
   protected $websocket_url;
-  protected $websocket_loop;
   protected $websocket_client;
 
   static $fields_int = array();
@@ -31,7 +30,7 @@ class ServerConnection extends EntityBasic {
     parent::__construct($data);
 
     // Initialize dispatcher.
-    if (!empty($this->dispatcher) && $this->dispatcher instanceof \Agnate\RPG\Dispatcher\SlackDispatcher) {
+    if (!empty($this->dispatcher) && $this->dispatcher instanceof Dispatcher\SlackDispatcher) {
       $this->dispatcher->connection = $this;
     }
   }
@@ -40,7 +39,7 @@ class ServerConnection extends EntityBasic {
    * Get the IM channel for this Guild.
    * @param $guild Guild object that we want to find the IM channel ID for.
    */
-  public function getGuildChannel(\Agnate\RPG\Guild $guild) {
+  public function getGuildChannel(Guild $guild) {
     return $this->connection->im_channels[$guild->slack_id];
   }
 
@@ -61,18 +60,8 @@ class ServerConnection extends EntityBasic {
   }
 
   protected function startWebsocketServer() {
-    // Create websocket connection.
-    $this->websocket_loop = \React\EventLoop\Factory::create();
-
-    // Add any timers necessary.
-    // $this->websocket_loop->addPeriodicTimer(2, 'timer_process_queue');
-    // $this->websocket_loop->addPeriodicTimer(31, 'timer_reset_tavern');
-    // $this->websocket_loop->addPeriodicTimer(32, 'timer_trickle_tavern');
-    // $this->websocket_loop->addPeriodicTimer(33, 'timer_refresh_quests');
-    // $this->websocket_loop->addPeriodicTimer(34, 'timer_leaderboard_standings');
-
     // Create the websocket client.
-    $this->websocket_client = new \Devristo\Phpws\Client\WebSocket ($this->websocket_url, $this->websocket_loop, $this->server->logger);
+    $this->websocket_client = new \Devristo\Phpws\Client\WebSocket ($this->websocket_url, $this->server->websocket_loop, $this->server->logger);
 
     $this->websocket_client->on("request", function($headers) {
       $this->server->logger->notice("Request object created.");
@@ -123,8 +112,8 @@ class ServerConnection extends EntityBasic {
       }
     });
 
+    // Open the client.
     $this->websocket_client->open();
-    $this->websocket_loop->run();
   }
 
   /**
@@ -150,33 +139,25 @@ class ServerConnection extends EntityBasic {
     // Nothing to do if there's no text.
     if (empty($data['text'])) return;
 
-    // Get the message text.
-    $text = $data['text'];
+    // print "Got a message: " . $data['text'] . "\n";
 
-    // Bust it up and send it as a command to RPGSession.
-    /*
-    'type' => 'message',
-    'channel' => 'D286C33AR',
-    'user' => 'U0265JBJW',
-    'text' => 'hello',
-    'ts' => '1473045021.000013',
-    'team' => 'T025KTDB7',
-    */
-    $session_data = $this->populateUserData($user_id, $data['team'], $text);
-    $session = new \Agnate\RPG\Session ();
-    $messages = $session->run($text, $session_data);
-    //$this->server->logger->notice($response);
-
-    // Response must be in the form of an Array of Message instances.
-    if (!is_array($messages) && $messages instanceof \Agnate\RPG\Message)
-      $messages = array($messages);
+    // Create a Session and see if it triggers an action and delivers a Message array.
+    $session = new Session;
+    $messages = $session->run($data);
+    
+    // print "Received " . count($messages) . " message(s).\n";
 
     // If this is not an array, we're done.
     if (!is_array($messages)) {
-      $this->server->logger->err('Response from user input was not Message class. Response: ' . $messages);
+      $this->server->logger->err('Response from user input was not Message class. Response: ' . var_export($messages, true));
 
       // TODO: Send a friendly error message to user about the problem.
-      return;
+      $messages = array(
+        new Message (array(
+          'channel' => new Message\Channel (Message\Channel::TYPE_REPLY, NULL, $session->data->channel),
+          'text' => 'There was an error executing this command. Please contact help@lazyquest.dinelle.ca to let Paul know. Thanks!',
+        )),
+      );
     }
 
     // Dispatch the messages.
@@ -186,26 +167,15 @@ class ServerConnection extends EntityBasic {
   }
 
   /**
-   * Convert a Slack data response into usable game classes.
-   */
-  protected function populateUserData($slack_user_id, $slack_team_id, $text, $debug = FALSE) {
-    return array(
-      'slack_user_id' => $slack_user_id,
-      'slack_team_id' => $slack_team_id,
-      'input' => $text,
-    );
-  }
-
-  /**
    * Test the connection.
    */
   protected function test() {
-    $message = new \Agnate\RPG\Message (array(
-      'channel' => new \Agnate\RPG\Message\Channel (\Agnate\RPG\Message\Channel::TYPE_PUBLIC),
+    $message = new Message (array(
+      'channel' => new Message\Channel (Message\Channel::TYPE_PUBLIC),
       'text' => 'Lazy Quest server now online.',
     ));
 
-    $this->dispatcher->dispatch($message);
+    $success = $this->dispatcher->dispatch($message);;
   }
 
   /**

@@ -1,5 +1,7 @@
 <?php
 
+use \Agnate\RPG\Action\ActionData;
+
 namespace Agnate\RPG;
 
 class Trigger {
@@ -53,22 +55,17 @@ class Trigger {
 
   /**
    * Perform the action stored by this trigger.
-   * @param $input Text input from the player to perform the action on.
-   * @return Returns a Layout object that can be encoded into an output for Slack or browsers.
+   * @param $data ActionData instance containing all of the session information.
+   * @return Returns a Message (or array of Message instances) that can be encoded into an output for Slack or browsers.
    */
-  public function perform_action ($input) {
-    if (!$this->is_triggered($input)) return FALSE;
-
-    // Explode the arguments based on a space, then shift off the first item (which is the command).
-    $args = explode(' ', trim($input));
-    array_shift($args);
-    $this->args = $args;
+  public function perform_action (\Agnate\RPG\Action\ActionData $data) {
+    if (!$this->is_triggered($data->text)) return FALSE;
 
     // Must convert this to a variable to trigger PHP's scope resolution operator (http://php.net/manual/en/language.oop5.paamayim-nekudotayim.php).
     $action = $this->action;
 
     // Trigger the action and pass it the arguments.
-    return $action::perform(array_merge($this->args, $this->command_args));
+    return $action::perform($data);
   }
 
 }

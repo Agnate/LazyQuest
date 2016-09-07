@@ -9,9 +9,9 @@ define('GAME_SERVER_PUBLIC_URL', 'https://your.domain');
 define('SLACK_OAUTH_URL', "https://slack.com/api/oauth.access");
 define('SLACK_OAUTH_CLIENT_ID', "XXXXXXXXXX.XXXXXXXXXXX");
 define('SLACK_OAUTH_CLIENT_SECRET', "XXXXXXXXXXXXXXXXXX");
-define('SLACK_BOT_USERNAME', 'SLCKSLSH');
-define('SLACK_BOT_ICON', ':slckslsh:');
-define('SLACK_BOT_PUBLIC_CHANNEL', 'some-slack-channel');
+define('SLACK_OAUTH_VERIFICATION', "XXXXXXXXXXXXXXXXXXX");
+define('SLACK_BOT_USERNAME', 'LazyQuest');
+define('SLACK_BOT_ICON', ':lazyquest:');
 
 // Database configuration.
 define('DB_HOST', '127.0.0.1');

@@ -16,6 +16,7 @@ use \Zend\Log\Writer\Stream;
 use \Frlnc\Slack\Core\Commander;
 use \Frlnc\Slack\Http\CurlInteractor;
 use \Frlnc\Slack\Http\SlackResponseFactory;
+use \React\EventLoop\Factory;
 
 namespace Agnate\RPG;
 
@@ -24,6 +25,7 @@ class Server {
   public $interactor;
   public $teams;
   public $connections;
+  public $websocket_loop;
   public $logger;
 
   protected static $logger_table = 'logs';
@@ -36,6 +38,7 @@ class Server {
     $this->interactor = new \Frlnc\Slack\Http\CurlInteractor;
     $this->interactor->setResponseFactory(new \Frlnc\Slack\Http\SlackResponseFactory);
     $this->commanders = array();
+    $this->websocket_loop = \React\EventLoop\Factory::create();
 
     // Start up the logger.
     $this->startLogger();
@@ -66,7 +69,19 @@ class Server {
 
       // No errors, so add it to the list of viable connections.
       $connections[$team->tid] = $connection;
+
+      $this->logger->notice("Created a websocket connection for Team " . $team->team_id . " (tid: " . $team->tid . ").");
     }
+
+    // Add any timers necessary.
+    // $this->websocket_loop->addPeriodicTimer(2, 'timer_process_queue');
+    // $this->websocket_loop->addPeriodicTimer(31, 'timer_reset_tavern');
+    // $this->websocket_loop->addPeriodicTimer(32, 'timer_trickle_tavern');
+    // $this->websocket_loop->addPeriodicTimer(33, 'timer_refresh_quests');
+    // $this->websocket_loop->addPeriodicTimer(34, 'timer_leaderboard_standings');
+
+    // Run the loop.
+    $this->websocket_loop->run();
   }
 
   /**

@@ -11,12 +11,19 @@ class Message extends EntityBasic {
 
   public $channel; // Channel the Message should render to.
   public $slack_channel;
-  public $as_user = TRUE;
+  // public $as_user = TRUE;
   public $text;
   public $attachments;
+  public $ts;
+
+  public $username = SLACK_BOT_USERNAME;
+  public $icon_emoji = SLACK_BOT_ICON;
+
+  // Special actions that are unset.
+  public $attachments_clear;
 
   // For messages with buttons:
-  public $response_type = 'in_channel';
+  // public $response_type = 'in_channel';
   // public $replace_original; // boolean - ONLY used when using buttons
   // public $delete_original; // boolean - ONLY used when using buttons
 
@@ -62,12 +69,19 @@ class Message extends EntityBasic {
 
     // Convert attachments.
     unset($payload['attachments']);
-    // if (!empty($this->attachments)) {
-    //   $payload['attachments'] = array();
-    //   foreach ($this->attachments as $attachment) {
-    //     $payload['attachments'][] = $attachment->jsonSerialize();
-    //   }
-    // }
+    if (!empty($this->attachments)) {
+      $attachments = array();
+      foreach ($this->attachments as $attachment) {
+        $attachments[] = $attachment->jsonSerialize();
+      }
+      // Must json_encode attachments so that http_build_query doesn't muck up the response URL.
+      $payload['attachments'] = json_encode($attachments, TRUE);
+    }
+
+    // For chat.update, we have to pass an empty attachments list if we want to clear it.
+    if ($this->attachments_clear && empty($this->attachments)) {
+      $payload['attachments'] = '[]';
+    }
 
     // Clear all of the NULL values.
     foreach ($payload as $key => $value) {

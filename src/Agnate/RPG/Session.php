@@ -1,16 +1,15 @@
 <?php
 use \Kint;
-use Agnate\RPG\App;
-use Agnate\RPG\Trigger;
-use Agnate\RPG\Action\GreetingAction;
+use \Agnate\RPG\App;
+use \Agnate\RPG\Trigger;
+use \Agnate\RPG\Action\ActionData;
+use \Agnate\RPG\Action\GreetingAction;
 
 namespace Agnate\RPG;
 
 class Session {
 
   public $data;
-  public $debug = FALSE;
-  public $slack_request_data;
   public $response;
   public $triggers = array();
 
@@ -27,44 +26,36 @@ class Session {
 
   /**
    * @return Array of Message instances.
+   * @param $data Array of all of the data passed by Slack. Expected:
+   *   array(
+   *     'type' => 'message',
+   *     'channel' => 'D99999AR',
+   *     'user' => 'U999999W',
+   *     'text' => 'hello',
+   *     'ts' => '1473045021.000013',
+   *     'team' => 'T9999999',
+   *     'debug' => FALSE,
+   *   )
    */
-  public function run ($input, $slack_request_data = array()) {
-    /* Expecting:
-    $slack_request_data = array(
-      'slack_user_id' => $slack_user_id,
-      'slack_team_id' => $slack_team_id,
-      'input' => $text,
-    )
-    */
-    $this->data = $slack_request_data;
-    $this->debug = (isset($this->data['debug']) && $this->data['debug'] == 'true');
+  public function run (Array $data) {
+    // Convert this to an ActionData instance to make it easier to manage.
+    $this->data = new Action\ActionData ($data);
 
-    d($input);
-    d($slack_request_data);
-
-    /*
-    'type' => 'message',
-    'channel' => 'D286C33AR',
-    'user' => 'U0265JBJW',
-    'text' => 'hello',
-    'ts' => '1473045021.000013',
-    'team' => 'T025KTDB7',
-    */
-
+    // Check all of the triggers to see if there are any Actions to run.
     foreach ($this->triggers as $trigger) {
       // If the input triggers a command, run the action associated with the trigger.
-      if ($trigger->is_triggered($input)) {
-        $this->response = $trigger->perform_action($input);
+      if ($trigger->is_triggered($this->data->text)) {
+        $this->response = $trigger->perform_action($this->data);
         break;
       }
     }
 
-    // d($this->response);
-
     // If there's no response, return the "no command found" response.
     if (empty($this->response)) {
-      // TODO: Needs to return a nice Help text and in the form of a Message class.
-      return 'NO COMMAND';
+      $this->response = new Message (array(
+        'channel' => new Message\Channel (Message\Channel::TYPE_REPLY, NULL, $this->data->channel),
+        'text' => 'Command was invalid. Please type `help` to see a list of commands.',
+      ));
     }
 
     // Convert to array to simplify output handling.

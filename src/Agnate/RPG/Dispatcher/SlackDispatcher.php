@@ -29,12 +29,18 @@ class SlackDispatcher implements DispatcherInterface {
         $messages[] = $message->jsonSerialize();
       }
     }
+    // If this message is supposed to go directly to Guilds, send each one a message.
     else if ($message->channel->type == \Agnate\RPG\Message\Channel::TYPE_DIRECT) {
       // Loop through all Guilds and make a message copy.
       foreach ($message->channel->guilds as $guild) {
         $message->slack_channel = $this->connection->getGuildChannel($guild);
         $messages[] = $message->jsonSerialize();
       }
+    }
+    // If this is a reply back to a user (probably one who has not registered yet), send directly to the channel ID.
+    else if ($message->channel->type == \Agnate\RPG\Message\Channel::TYPE_REPLY) {
+      $message->slack_channel = $message->channel->channel_id;
+      $messages[] = $message->jsonSerialize();
     }
 
     // Send the messages through the deliverer (to Slack).

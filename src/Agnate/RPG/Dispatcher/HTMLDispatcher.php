@@ -28,8 +28,11 @@ class HTMLDispatcher implements DispatcherInterface {
     else if ($message->channel == \Agnate\RPG\Message\Channel::TYPE_DIRECT) {
       // Loop through all Guilds and make a message copy.
       foreach ($message->channel->guilds as $guild) {
-        $response[] = $message->render($guild->getChannelName());
+        $response[] = $message->render($message->channel->type, $guild->getChannelName());
       }
+    }
+    else if ($message->channel->type == \Agnate\RPG\Message\Channel::TYPE_REPLY) {
+      $response[] = $message->render($message->channel->type, $message->channel->channel_id);
     }
 
     return implode('', $response);

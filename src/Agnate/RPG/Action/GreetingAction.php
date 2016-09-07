@@ -11,9 +11,9 @@ namespace Agnate\RPG\Action;
 
 class GreetingAction extends \Agnate\RPG\EntityBasic implements ActionInterface {
 
-  public static function perform ($args) {
+  public static function perform (ActionData $data) {
     return new \Agnate\RPG\Message (array(
-      'channel' => new \Agnate\RPG\Message\Channel (\Agnate\RPG\Message\Channel::TYPE_PUBLIC, NULL),
+      'channel' => new \Agnate\RPG\Message\Channel (\Agnate\RPG\Message\Channel::TYPE_REPLY, NULL, $data->channel),
       'text' => 'Hello world',
       'attachments' => array(
         new \Agnate\RPG\Message\Attachment (array(
