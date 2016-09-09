@@ -5,7 +5,7 @@
 
 require_once('bootstrap.php');
 
-use Agnate\RPG\Server;
+use Agnate\LazyQuest\Server;
 
-$server = new Agnate\RPG\Server;
+$server = new Agnate\LazyQuest\Server;
 $server->start();

@@ -12,5 +12,5 @@ if ($payload['token'] !== SLACK_OAUTH_VERIFICATION) exit;
 
 // Create the ServerConnection and link to the Team.
 // Note: We do not start up the Server, we just need it to initialize the connection.
-$server = new \Agnate\RPG\Server;
+$server = new \Agnate\LazyQuest\Server;
 $server->handle($payload['team']['id'], $payload);

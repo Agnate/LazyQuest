@@ -3,7 +3,7 @@
 require_once('../../bootstrap.php');
 
 // Create a server instance and start it up.
-// $server = new Agnate\RPG\Server;
+// $server = new Agnate\LazyQuest\Server;
 // $server->start();
 
 $data = array(
@@ -15,7 +15,7 @@ $data = array(
   'team' => 'T025KTDB7',
 );
 
-$session = new Agnate\RPG\Session;
+$session = new Agnate\LazyQuest\Session;
 $messages = $session->run($data);
 
 foreach ($messages as $message) {

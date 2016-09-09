@@ -34,5 +34,5 @@ $update_version = $opts['v'];
 $force_update = isset($opts['f']);
 
 // Get the updater so we can compare versions.
-$updater = \Agnate\RPG\Updater::get();
+$updater = \Agnate\LazyQuest\Updater::get();
 $updater->perform($update_version, $force_update);

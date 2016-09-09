@@ -7,11 +7,11 @@ require_once('../../bootstrap.php');
 if (!isset($_REQUEST['text'])) exit;
 
 $command = trim($_REQUEST['text']);
-$session = new Agnate\RPG\Session ();
+$session = new Agnate\LazyQuest\Session ();
 $messages = $session->run($command, $_REQUEST);
 
 // Dispatch all of the received messages.
-$dispatcher = new Agnate\RPG\Dispatcher\HTMLDispatcher ();
+$dispatcher = new Agnate\LazyQuest\Dispatcher\HTMLDispatcher ();
 foreach ($messages as $message) {
   // d($dispatcher->dispatch($message));
   print $dispatcher->dispatch($message) . '<br><br>';

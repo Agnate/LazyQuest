@@ -80,9 +80,9 @@ if (empty($response) || !property_exists($json, 'ok') || !$json->ok) {
 } 
 
 // Check if a Team already exists and if not, create one.
-$team = Agnate\RPG\Team::load(array('team_id' => $json->team_id));
+$team = Agnate\LazyQuest\Team::load(array('team_id' => $json->team_id));
 if (empty($team)) {
-  $team = new Agnate\RPG\Team (array(
+  $team = new Agnate\LazyQuest\Team (array(
     'team_id' => $json->team_id,
     'team_name' => $json->team_name,
     'bot_user_id' => $json->bot->bot_user_id,
