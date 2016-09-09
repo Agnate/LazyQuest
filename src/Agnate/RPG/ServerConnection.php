@@ -93,21 +93,19 @@ class ServerConnection extends EntityBasic {
       // $this->server->logger->notice($data);
 
       // If a new IM channel is opened, refresh the list.
-      // if (isset($data['type']) && $data['type'] == 'im_created') {
-      //   global $im_channels, $commander;
-      //   $im_channels = gather_im_channels($commander);
-      //   return;
-      // }
+      if (isset($data['type']) && $data['type'] == 'im_created') {
+        $this->fetchChannels();
+        return;
+      }
 
       // If a new team member joins, refresh the list.
-      // else if (isset($data['type']) && $data['type'] == 'team_join') {
-      //   global $im_channels, $commander;
-      //   $user_list = gather_user_list($commander);
-      //   return;
-      // }
+      if (isset($data['type']) && $data['type'] == 'team_join') {
+        $this->fetchUsers();
+        return;
+      }
 
       // If a user changes their username, update their Guild.
-      // else if (isset($data['type']) && $data['type'] == 'user_change') {
+      // if (isset($data['type']) && $data['type'] == 'user_change') {
       //   update_user($data);
       //   return;
       // }
