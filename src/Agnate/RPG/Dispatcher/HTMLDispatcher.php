@@ -1,10 +1,9 @@
 <?php
 
-use Agnate\RPG\Message;
-use Agnate\RPG\Message\Channel;
-use Agnate\RPG\Dispatcher\DispatcherInterface;
-
 namespace Agnate\RPG\Dispatcher;
+
+use \Agnate\RPG\Message;
+use \Agnate\RPG\Message\Channel;
 
 class HTMLDispatcher implements DispatcherInterface {
 
@@ -18,20 +17,20 @@ class HTMLDispatcher implements DispatcherInterface {
   /**
    * Dispatch the message to Slack (or our debug tool).
    */
-  public function dispatch (\Agnate\RPG\Message $message) {
+  public function dispatch (Message $message) {
     $response = array();
     
     // Clone messages for multiple channels.
-    if ($message->channel->type == \Agnate\RPG\Message\Channel::TYPE_PUBLIC) {
-      $response[] = $message->render($message->channel->type, \Agnate\RPG\Message\Channel::TYPE_PUBLIC);
+    if ($message->channel->type == Channel::TYPE_PUBLIC) {
+      $response[] = $message->render($message->channel->type, Channel::TYPE_PUBLIC);
     }
-    else if ($message->channel == \Agnate\RPG\Message\Channel::TYPE_DIRECT) {
+    else if ($message->channel == Channel::TYPE_DIRECT) {
       // Loop through all Guilds and make a message copy.
       foreach ($message->channel->guilds as $guild) {
         $response[] = $message->render($message->channel->type, $guild->getChannelName());
       }
     }
-    else if ($message->channel->type == \Agnate\RPG\Message\Channel::TYPE_REPLY || $message->channel->type == \Agnate\RPG\Message\Channel::TYPE_UPDATE) {
+    else if ($message->channel->type == Channel::TYPE_REPLY || $message->channel->type == Channel::TYPE_UPDATE) {
       $response[] = $message->render($message->channel->type, $message->channel->channel_id);
     }
 

@@ -1,8 +1,8 @@
 <?php
 
-use \Agnate\RPG\Action\ActionData;
-
 namespace Agnate\RPG;
+
+use \Exception;
 
 class Trigger {
 
@@ -17,8 +17,8 @@ class Trigger {
    * @param $args Any number of additional parameters that act as additional arguments to be passed to the Action.
    */
   function __construct($commands, $action) {
-    if (!is_array($commands)) throw new \Exception('Trigger commands must be an Array of Strings.');
-    if (!class_exists($action) || !in_array('Agnate\RPG\Action\ActionInterface', class_implements($action))) throw new \Exception('Trigger action must be the name of an Action class and must implement ActionInterface, "' . $action . '" given.');
+    if (!is_array($commands)) throw new Exception('Trigger commands must be an Array of Strings.');
+    if (!class_exists($action) || !in_array('Agnate\RPG\Action\ActionInterface', class_implements($action))) throw new Exception('Trigger action must be the name of an Action class and must implement ActionInterface, "' . $action . '" given.');
 
     // Set the defaults.
     $this->action = $action;
@@ -39,7 +39,7 @@ class Trigger {
    * @param $input String of a command the player typed.
    * @return Returns TRUE if it will be triggered, FALSE otherwise.
    */
-  public function is_triggered ($input) {
+  public function isTriggered ($input) {
     foreach ($this->commands as $command) {
       // Allows for partial command checks.
       $input_to_check = substr($input, 0, strlen($command));
@@ -58,9 +58,7 @@ class Trigger {
    * @param $data ActionData instance containing all of the session information.
    * @return Returns a Message (or array of Message instances) that can be encoded into an output for Slack or browsers.
    */
-  public function perform_action (\Agnate\RPG\Action\ActionData $data) {
-    if (!$this->is_triggered($data->text)) return FALSE;
-
+  public function performAction (ActionData $data) {
     // Must convert this to a variable to trigger PHP's scope resolution operator (http://php.net/manual/en/language.oop5.paamayim-nekudotayim.php).
     $action = $this->action;
 

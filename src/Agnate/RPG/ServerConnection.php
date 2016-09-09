@@ -1,12 +1,12 @@
 <?php
 
-use \Agnate\RPG\EntityBasic;
-use \Agnate\RPG\Dispatcher\SlackDispatcher;
-
-use \Devristo\Phpws\Client\WebSocket;
-use \React\EventLoop\Factory;
-
 namespace Agnate\RPG;
+
+use \Agnate\RPG\Dispatcher\SlackDispatcher;
+use \Agnate\RPG\Message\Channel;
+use \Devristo\Phpws\Client\WebSocket;
+use \Exception;
+use \React\EventLoop\Factory;
 
 class ServerConnection extends EntityBasic {
 
@@ -30,7 +30,7 @@ class ServerConnection extends EntityBasic {
     parent::__construct($data);
 
     // Initialize dispatcher.
-    if (!empty($this->dispatcher) && $this->dispatcher instanceof Dispatcher\SlackDispatcher) {
+    if (!empty($this->dispatcher) && $this->dispatcher instanceof SlackDispatcher) {
       $this->dispatcher->connection = $this;
     }
   }
@@ -72,7 +72,7 @@ class ServerConnection extends EntityBasic {
    */
   protected function startWebsocketServer() {
     // Create the websocket client.
-    $this->websocket_client = new \Devristo\Phpws\Client\WebSocket ($this->websocket_url, $this->server->websocket_loop, $this->server->logger);
+    $this->websocket_client = new WebSocket ($this->websocket_url, $this->server->websocket_loop, $this->server->logger);
 
     $this->websocket_client->on("request", function($headers) {
       $this->server->logger->notice("Request object created.");
@@ -164,10 +164,7 @@ class ServerConnection extends EntityBasic {
 
       // TODO: Send a friendly error message to user about the problem.
       $messages = array(
-        new Message (array(
-          'channel' => new Message\Channel (Message\Channel::TYPE_REPLY, NULL, $session->data->channel),
-          'text' => 'There was an error executing this command. Please contact help@lazyquest.dinelle.ca to let Paul know. Thanks!',
-        )),
+        Message::error('There was an error executing this command.', $session->data->channel),
       );
     }
 
@@ -225,7 +222,7 @@ class ServerConnection extends EntityBasic {
     */
 
     // Start a new Session.
-    $session = new \Agnate\RPG\Session;
+    $session = new Session;
 
     // Run our data through to see if anything should get updated.
     $messages = $session->update($data);
@@ -241,7 +238,7 @@ class ServerConnection extends EntityBasic {
    */
   protected function test() {
     $message = new Message (array(
-      'channel' => new Message\Channel (Message\Channel::TYPE_PUBLIC),
+      'channel' => new Channel (Channel::TYPE_PUBLIC),
       'text' => 'Lazy Quest server now online.',
     ));
 
@@ -256,7 +253,7 @@ class ServerConnection extends EntityBasic {
     $body = $response->getBody();
     // Check for an okay response and get url.
     if (!empty($body['ok'])) $this->websocket_url = $body['url'];
-    else throw new \Exception ("Failed to initiate the rtm.start call. Response: " . var_export($body, true));
+    else throw new Exception ("Failed to initiate the rtm.start call. Response: " . var_export($body, true));
   }
 
   /**
@@ -273,7 +270,7 @@ class ServerConnection extends EntityBasic {
         $this->public_channels[$channel['id']] = $channel['name'];
       }
     }
-    else throw new \Exception ("Failed to check channels.list for Team ID " . $this->team->tid . ". Response: " . var_export($body, true));
+    else throw new Exception ("Failed to check channels.list for Team ID " . $this->team->tid . ". Response: " . var_export($body, true));
 
     // Also check private groups, in case people didn't want to use public channels.
     $response = $this->commander->execute('groups.list');
@@ -285,7 +282,7 @@ class ServerConnection extends EntityBasic {
         $this->public_channels[$group['id']] = $group['name'];
       }
     }
-    else throw new \Exception ("Failed to check groups.list for Team ID " . $this->team->tid . ". Response: " . var_export($body, true));
+    else throw new Exception ("Failed to check groups.list for Team ID " . $this->team->tid . ". Response: " . var_export($body, true));
 
     // Get list of IM channels.
     $response = $this->commander->execute('im.list');
@@ -297,7 +294,7 @@ class ServerConnection extends EntityBasic {
         $this->im_channels[$im['user']] = $im['id'];
       }
     }
-    else throw new \Exception ("Failed to check im.list for Team ID " . $this->team->tid . ". Response: " . var_export($body, true));
+    else throw new Exception ("Failed to check im.list for Team ID " . $this->team->tid . ". Response: " . var_export($body, true));
   }
 
   /**
@@ -313,6 +310,6 @@ class ServerConnection extends EntityBasic {
         $this->users[$member['id']] = $member;
       }
     }
-    else throw new \Exception ("Failed to check users.list for Team ID " . $this->team->tid . ". Response: " . var_export($body, true));
+    else throw new Exception ("Failed to check users.list for Team ID " . $this->team->tid . ". Response: " . var_export($body, true));
   }
 }

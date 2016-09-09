@@ -1,11 +1,11 @@
 <?php
 
-use Agnate\RPG\Message;
-
 namespace Agnate\RPG\Dispatcher;
+
+use \Agnate\RPG\Message;
 
 interface DispatcherInterface {
 
-  public function dispatch (\Agnate\RPG\Message $message);
+  public function dispatch (Message $message);
 
 }

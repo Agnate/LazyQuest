@@ -1,0 +1,134 @@
+body {
+	position: relative;
+	background-color: white;
+	color: #3D3C40;
+	font-family: Lato, sans-serif;
+	font-size: 15px;
+	line-height: 22px;
+}
+
+code,
+.callback_id {
+	font-size: .72rem;
+	white-space: normal;
+	color: #c25;
+	padding: 1px 3px;
+	font-family: Monaco,Menlo,Consolas,"Courier New",monospace;
+	border-radius: 3px;
+	box-sizing: border-box;
+	background-color: #f7f7f9;
+	border: 1px solid #e1e1e8;
+}
+
+img.icon {
+	display: inline-block;
+	vertical-align: baseline;
+	margin: -2px 0;
+	line-height: 18px;
+	width: 22px;
+	height: 22px;
+	background-size: 22px;
+	box-sizing: border-box;
+}
+
+img.map {
+	max-width: 100%;
+}
+
+.channel-personal {
+	/*font-style: italic;
+	color: #8b898f;*/
+}
+
+.attachment {
+  padding-left: 10px;
+  margin-top: 10px;
+	border-left: 5px solid #e8e8e8;
+}
+
+
+/* Content container */
+
+#output {
+	margin-bottom: 50px;
+}
+
+/* Input interface */
+
+#interface {
+	position: fixed;
+	left: 0;
+	bottom: 0;
+	width: 100%;
+	background-color: grey;
+	color: black;
+}
+
+#interface-form {
+	width: 500px;
+	margin: 10px auto;
+}
+
+#text {
+	width: 330px;
+}
+
+#profile {
+	width: 100px;
+}
+
+h1 {
+	font-size: 15px;
+	color: grey;
+}
+h1:before {
+	content: "[" attr(channel-type) "] ";
+}
+h1.public {
+	color: #40a4c3;
+}
+
+.attachment-button-confirm {
+	display: none;
+}
+
+h2 {
+	font-size: 15px;
+	color: #3d3c40;
+	font-weight: bold;
+}
+
+input[type="button"] {
+	background-color: transparent;
+  border: 1px solid rgba(160,160,162,.5);
+  outline: 0;
+  text-decoration: none;
+  vertical-align: middle;
+  color: #565759;
+  max-width: 150px;
+  font-size: .8125rem;
+  font-weight: 700;
+  height: 30px;
+  padding: 0 10px;
+  margin: 0 8px 8px 0;
+  text-shadow: none;
+  -webkit-font-smoothing: antialiased;
+  line-height: 1.2rem;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  cursor: pointer;
+  border-radius: .25rem;
+  box-shadow: none;
+  position: relative;
+  display: inline-block;
+  text-align: center;
+  white-space: nowrap;
+  -webkit-appearance: none;
+  -webkit-tap-highlight-color: transparent;
+}
+input[type="button"]:hover {
+	background-color: #f9f9f9;
+	border-color: #a0a0a2;
+}

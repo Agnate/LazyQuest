@@ -1,11 +1,10 @@
 <?php
-use \Kint;
-use \Agnate\RPG\App;
-use \Agnate\RPG\Trigger;
-use \Agnate\RPG\Action\ActionData;
-use \Agnate\RPG\Action\GreetingAction;
 
 namespace Agnate\RPG;
+
+use \Agnate\RPG\Action\GreetingAction;
+use \Agnate\RPG\Message\Channel;
+use \Kint;
 
 class Session {
 
@@ -21,7 +20,8 @@ class Session {
     App::start();
 
     // Register all the triggers.
-    $this->triggers[] = new Trigger (array('hello'), '\Agnate\RPG\Action\GreetingAction');
+    $this->triggers[] = new Trigger (array('hello', 'hi', 'hey', 'yo', 'sup', 'howdy', 'hai', 'hay'), '\Agnate\RPG\Action\GreetingAction');
+    $this->triggers[] = new Trigger (array('register'), '\Agnate\RPG\Action\RegisterAction');
   }
 
   /**
@@ -39,23 +39,20 @@ class Session {
    */
   public function run (Array $data) {
     // Convert this to an ActionData instance to make it easier to manage.
-    $this->data = new Action\ActionData ($data);
+    $this->data = new ActionData ($data);
 
     // Check all of the triggers to see if there are any Actions to run.
     foreach ($this->triggers as $trigger) {
       // If the input triggers a command, run the action associated with the trigger.
-      if ($trigger->is_triggered($this->data->text)) {
-        $this->response = $trigger->perform_action($this->data);
+      if ($trigger->isTriggered($this->data->text)) {
+        $this->response = $trigger->performAction($this->data);
         break;
       }
     }
 
     // If there's no response, return the "no command found" response.
     if (empty($this->response)) {
-      $this->response = new Message (array(
-        'channel' => new Message\Channel (Message\Channel::TYPE_REPLY, NULL, $this->data->channel),
-        'text' => 'Command was invalid. Please type `help` to see a list of commands.',
-      ));
+      $this->response = Message::reply('Command was invalid. Please type `help` to see a list of commands.', $this->data->channel);
     }
 
     // Convert to array to simplify output handling.
@@ -72,23 +69,39 @@ class Session {
    */
   public function update(Array $data) {
     // Convert this to an ActionData instance to make it easier to manage.
-    $this->data = new Action\ActionData ($data);
+    $this->data = new ActionData ($data);
 
     // NOTE: We will need to add some additional fields for all Messages that are Channel::TYPE_UPDATE:
     //  'ts' -> This is the timestamp of the original message, which we need. Use $payload['message_ts'] as the value.
     //  'attachments_clear' -> Set this to TRUE to clear out any attachments that might be there on original message when it gets updated.
     //  'channel' -> This must always be Channel::TYPE_UPDATE and we use the $this->data->channel as the value.
 
+    // Route the update through triggers to match the next action.
+    $next_action = $this->data->nextAction();
 
-    // Create temporary message.
-    return array(
-      new Message (array(
-        'channel' => new Message\Channel (Message\Channel::TYPE_UPDATE, NULL, $this->data->channel),
-        'text' => "Woo! Action chosen: " . $this->data->actions[0]['name'],
-        'ts' => $this->data->message_ts,
-        'attachments_clear' => TRUE,
-      ))
-    );
+    // print 'Next action: ' . $next_action . "\n";
+
+    // Check all of the triggers to see if there are any Actions to run.
+    foreach ($this->triggers as $trigger) {
+      // If the input triggers a command, run the action associated with the trigger.
+      if ($trigger->isTriggered($next_action)) {
+        // print 'Triggered: ' . $trigger->action . "\n";
+        $this->response = $trigger->performAction($this->data);
+        break;
+      }
+    }
+
+    // If there's no response, return an "invalid button" response.
+    if (empty($this->response)) {
+      $this->response = Message::error('Button action was invalid.', $this->data->channel);
+    }
+
+    // Convert to array to simplify output handling.
+    if (!is_array($this->response)) {
+      $this->response = array($this->response);
+    }
+
+    return $this->response;
   }
 
 }

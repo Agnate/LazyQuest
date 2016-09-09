@@ -1,8 +1,8 @@
 <?php
 
-use \Agnate\RPG\Action\ActionData;
-
 namespace Agnate\RPG\Action;
+
+use \Agnate\RPG\ActionData;
 
 interface ActionInterface {
 

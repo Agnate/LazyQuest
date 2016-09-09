@@ -2,7 +2,10 @@
 
 namespace Agnate\RPG;
 
-class EntityBasic implements \JsonSerializable {
+use \Exception;
+use \JsonSerializable;
+
+class EntityBasic implements JsonSerializable {
 
   static $fields_int; // Array: any field keys set in this array will be automatically converted to an integer.
   static $fields_array; // Array: any field keys set in this array will be automatically set as an empty array if no data is present. 
@@ -34,7 +37,7 @@ class EntityBasic implements \JsonSerializable {
       foreach (static::$fields_array as $field) {
         if (!is_array($this->{$field})) {
           // If something other than an Array is here, throw an exception.
-          if (!empty($this->{$field})) throw new \Exception('Entity field ' . $field . ' expected an Array, ' . $this->{$field} . ' given.');
+          if (!empty($this->{$field})) throw new Exception('Entity field ' . $field . ' expected an Array, ' . $this->{$field} . ' given.');
           else $this->{$field} = array();
         }
       }

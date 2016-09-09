@@ -1,9 +1,9 @@
 <?php
 
-use \Agnate\RPG\Team;
-use \Agnate\RPG\Update\UpdateBase;
-
 namespace Agnate\RPG\Update;
+
+use \Agnate\RPG\Guild;
+use \Agnate\RPG\Team;
 
 class Update_0_0_1 extends UpdateBase {
 
@@ -25,7 +25,7 @@ class Update_0_0_1 extends UpdateBase {
     $team_fields[] = "team_name VARCHAR(255) NOT NULL";
     $team_fields[] = "bot_user_id VARCHAR(255) NOT NULL";
     $team_fields[] = "bot_access_token VARCHAR(255) NOT NULL";
-    $queries[] = static::createTableStatement(\Agnate\RPG\Team::$db_table, \Agnate\RPG\Team::$primary_key, $team_fields);
+    $queries[] = static::createTableStatement(Team::$db_table, Team::$primary_key, $team_fields);
 
     // Create tables for Guild.
     $guild_fields = array();
@@ -34,7 +34,7 @@ class Update_0_0_1 extends UpdateBase {
     $guild_fields[] = "name VARCHAR(255) NOT NULL";
     $guild_fields[] = "icon VARCHAR(255) NOT NULL";
     $guild_fields[] = "team_id INT(11) NOT NULL";
-    $queries[] = static::createTableStatement(\Agnate\RPG\Guild::$db_table, \Agnate\RPG\Guild::$primary_key, $guild_fields);
+    $queries[] = static::createTableStatement(Guild::$db_table, Guild::$primary_key, $guild_fields);
 
     return $queries;
   }

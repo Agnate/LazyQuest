@@ -1,9 +1,9 @@
 <?php
 
-use \PDO;
-use \Exception;
-
 namespace Agnate\RPG;
+
+use \Exception;
+use \PDO;
 
 class Database {
 
@@ -39,7 +39,7 @@ class Database {
   public function connect() {
     // If we don't have a connection yet, connect to database.
     if (empty($this->connection)) {
-      $this->connection = new \PDO ("mysql:host=" . $this->host . ";dbname=" . $this->name, $this->user, $this->password, array(\PDO::ATTR_PERSISTENT => TRUE));
+      $this->connection = new PDO ("mysql:host=" . $this->host . ";dbname=" . $this->name, $this->user, $this->password, array(PDO::ATTR_PERSISTENT => TRUE));
     }
 
     return $this->connection;
@@ -69,7 +69,7 @@ class Database {
 
     // If there's still no connection, we can't do anything, so throw an error.
     if (empty($this->connection)) {
-      throw new \Exception("Could not initialize connection to PDO database.");
+      throw new Exception("Could not initialize connection to PDO database.");
     }
 
     return $this->connection->prepare($statement);
@@ -88,7 +88,7 @@ class Database {
     $query = $this->prepare($statement);
     $success = $query->execute();
     // If there was an error, throw it.
-    if (!$success) throw new \Exception(var_export($query->errorInfo(), true));
+    if (!$success) throw new Exception(var_export($query->errorInfo(), true));
     return $success;
   }
 

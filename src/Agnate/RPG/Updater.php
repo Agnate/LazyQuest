@@ -1,12 +1,10 @@
 <?php
 
+namespace Agnate\RPG;
+
+use \Agnate\RPG\Update\UpdateQuery;
 use \Exception;
 use \PDO;
-use \Agnate\RPG\App;
-use \Agnate\RPG\Entity;
-use \Agnate\RPG\Update;
-
-namespace Agnate\RPG;
 
 /**
  * Use an Updater to perform database updates for new features that are released.
@@ -48,7 +46,7 @@ class Updater extends Entity {
     }
 
     // Fetch the row as an Array so we can load up the Updater.
-    $row = $query->fetch(\PDO::FETCH_ASSOC);
+    $row = $query->fetch(PDO::FETCH_ASSOC);
 
     return Updater::load(array('uid' => $row['uid']));
   }
@@ -78,7 +76,7 @@ class Updater extends Entity {
    */
   public function perform ($version, $force = FALSE, $fromCLI = TRUE) {
     // Check that the version sent is valid.
-    if (!$this->validVersion($version)) throw new \Exception ('Invalid version sent to Updater->perform(), ' . $version . ' given.');
+    if (!$this->validVersion($version)) throw new Exception ('Invalid version sent to Updater->perform(), ' . $version . ' given.');
 
     // Calculate version difference between this instance and version sent as parameter.
     $updates = $this->versionDiff($version, $force);
@@ -143,7 +141,7 @@ class Updater extends Entity {
       // Run the queries.
       foreach ($queries as $query) {
         // If this isn't an UpdateQuery, cancel the whole update.
-        if (!$query instanceof \Agnate\RPG\Update\UpdateQuery) {
+        if (!$query instanceof UpdateQuery) {
           $this->output("@redQuery was not an UpdateQuery instance.@end");
           $update_success = FALSE;
           break 2;
@@ -193,7 +191,7 @@ class Updater extends Entity {
    * @param $query The query statement to process.
    * @return Boolean Returns if the query was successfully performed or not.
    */
-  protected function processQuery (\Agnate\RPG\Update\UpdateQuery $query) {
+  protected function processQuery (UpdateQuery $query) {
     // Run the query.
     $success = $query->execute();
 
@@ -316,7 +314,7 @@ class Updater extends Entity {
    * @return Array List of Update classes to run updates for.
    */
   protected function versionDiff ($version, $force_cur = FALSE) {
-    if (!$this->validVersion($version)) throw new \Exception ('Invalid version sent to Updater->versionDiff(), ' . $version . ' given.');
+    if (!$this->validVersion($version)) throw new Exception ('Invalid version sent to Updater->versionDiff(), ' . $version . ' given.');
     // Separate version code by decimal.
     $info = explode('.', $this->version);
     $upinfo = explode('.', $version);

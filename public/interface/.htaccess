@@ -1,0 +1,5 @@
+Options +FollowSymLinks -MultiViews -Indexes
+DirectoryIndex index.php index.html index.htm
+RewriteEngine On
+
+RewriteRule ^ui/(.*)$ parser.php?page=$1

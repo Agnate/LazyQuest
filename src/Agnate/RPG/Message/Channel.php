@@ -1,8 +1,9 @@
 <?php
 
-use Agnate\RPG\Guild;
-
 namespace Agnate\RPG\Message;
+
+use \Agnate\RPG\Guild;
+use \Exception;
 
 class Channel {
 
@@ -24,12 +25,12 @@ class Channel {
    * @param $channel_id Set to the channel ID when the type is set to Channel::TYPE_REPLY.
    */
   function __construct($type, $guilds = NULL, $channel_id = '') {
-    if (!in_array($type, static::$types)) throw new \Exception ('Channel type must one of the types specified in Channel, ' . $type . ' given.');
-    if (!empty($guilds) && !is_array($guilds) && !($guilds instanceof \Agnate\RPG\Guild)) throw new \Exception ('Channel guilds must be NULL, an Array of Guilds, or an individual Guild, ' . $guilds . ' given.');
-    if (($type == Channel::TYPE_REPLY || $type == Channel::TYPE_UPDATE) && empty($channel_id)) throw new \Exception ('Channel ID must be provided when Channel::TYPE_REPLY or Channel::TYPE_UPDATE is chosen.');
+    if (!in_array($type, static::$types)) throw new Exception ('Channel type must one of the types specified in Channel, ' . $type . ' given.');
+    if (!empty($guilds) && !is_array($guilds) && !($guilds instanceof Guild)) throw new Exception ('Channel guilds must be NULL, an Array of Guilds, or an individual Guild, ' . $guilds . ' given.');
+    if (($type == Channel::TYPE_REPLY || $type == Channel::TYPE_UPDATE) && empty($channel_id)) throw new Exception ('Channel ID must be provided when Channel::TYPE_REPLY or Channel::TYPE_UPDATE is chosen.');
 
     // If this is one Guild, put in an array.
-    if (!empty($guilds) && $guilds instanceof \Agnate\RPG\Guild) {
+    if (!empty($guilds) && $guilds instanceof Guild) {
       $guilds = array($guilds);
     }
 

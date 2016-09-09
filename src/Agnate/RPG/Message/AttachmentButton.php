@@ -1,13 +1,14 @@
 <?php
 
-use Agnate\RPG\EntityBasic;
-
 namespace Agnate\RPG\Message;
+
+use \Agnate\RPG\EntityBasic;
+use \Exception;
 
 /**
  * Mimics the settings of Slack's attachment actions button.
  */
-class AttachmentButton extends \Agnate\RPG\EntityBasic {
+class AttachmentButton extends EntityBasic {
 
   // Slack's attachment options and data go here.
   public $confirm;
@@ -38,8 +39,8 @@ class AttachmentButton extends \Agnate\RPG\EntityBasic {
    */
   function __construct($data = array()) {
     // Extra validation.
-    if (!empty($data['type']) && !in_array($data['type'], static::$types)) throw new \Exception('AttachmentButton $type must be one of the constants listed in the class static::$types, ' . $data['type'] . ' given.');
-    if (!empty($data['style']) && !in_array($data['style'], static::$styles)) throw new \Exception('AttachmentButton $styles must be one of the constants listed in the class static::$styles, ' . $data['style'] . ' given.');
+    if (!empty($data['type']) && !in_array($data['type'], static::$types)) throw new Exception('AttachmentButton $type must be one of the constants listed in the class static::$types, ' . $data['type'] . ' given.');
+    if (!empty($data['style']) && !in_array($data['style'], static::$styles)) throw new Exception('AttachmentButton $styles must be one of the constants listed in the class static::$styles, ' . $data['style'] . ' given.');
 
     // Assign data to instance properties.
     parent::__construct($data);

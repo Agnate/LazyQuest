@@ -1,24 +1,20 @@
 <?php
 
-use \Kint;
+namespace Agnate\RPG;
 
-use \Agnate\RPG\ServerConnection;
-use \Agnate\RPG\Session;
 use \Agnate\RPG\Dispatcher\SlackDispatcher;
-
+// Classes for debugging.
+use \Kint;
 // Classes for logging.
 use \Zend\Db\Adapter\Adapter;
 use \Zend\Log\Logger;
 use \Zend\Log\Writer\Db;
 use \Zend\Log\Writer\Stream;
-
 // Classes for websocket connections.
 use \Frlnc\Slack\Core\Commander;
 use \Frlnc\Slack\Http\CurlInteractor;
 use \Frlnc\Slack\Http\SlackResponseFactory;
 use \React\EventLoop\Factory;
-
-namespace Agnate\RPG;
 
 class Server {
 
@@ -92,7 +88,7 @@ class Server {
   public function connect (Team $team, $start_websocket = TRUE) {
     // Create the basics we need for the connection.
     $commander = new \Frlnc\Slack\Core\Commander($team->bot_access_token, $this->interactor);
-    $dispatcher = new \Agnate\RPG\Dispatcher\SlackDispatcher;
+    $dispatcher = new SlackDispatcher;
     
     // Create the connection.
     $connection = new ServerConnection (array(

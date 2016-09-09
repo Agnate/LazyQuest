@@ -1,11 +1,11 @@
 <?php
 
-use Agnate\RPG\App;
-use Agnate\RPG\EntityBasic;
-use Agnate\RPG\Message\Attachment;
-use Agnate\RPG\Message\Channel;
-
 namespace Agnate\RPG;
+
+use \Agnate\RPG\Message\Attachment;
+use \Agnate\RPG\Message\AttachmentButton;
+use \Agnate\RPG\Message\Channel;
+use \Exception;
 
 class Message extends EntityBasic {
 
@@ -38,7 +38,7 @@ class Message extends EntityBasic {
    */
   function __construct($data = array()) {
     // Extra validation.
-    if (!empty($data['channel']) && !($data['channel'] instanceof Message\Channel)) throw new \Exception ('Message channel must be a Channel object, ' . $data['channel'] . ' given.');
+    if (!empty($data['channel']) && !($data['channel'] instanceof Channel)) throw new Exception ('Message channel must be a Channel object, ' . $data['channel'] . ' given.');
     
     // Convert single Guild into an array.
     if (!empty($data['guilds']) && !is_array($data['guilds'])) {
@@ -52,7 +52,7 @@ class Message extends EntityBasic {
   /**
    * Add an attachment to the Message.
    */
-  public function addAttachment (Message\Attachment $attachment) {
+  public function addAttachment (Attachment $attachment) {
     $this->attachments[] = $attachment;
   }
 
@@ -109,6 +109,56 @@ class Message extends EntityBasic {
     $response[] = '</div>';
 
     return implode('', $response);
+  }
+
+  /**
+   * Create a new Message instance as a reply to the current user.
+   * @param $text String message to send to user.
+   * @param $channel_id Slack channel ID to send this message back to.
+   * @param $action_data Instance of ActionData which is used to add extra message items if necessary.
+   * @param $back Whether or not to add a Back button to the message.
+   */
+  public static function reply ($text, $channel_id, $action_data = NULL, $back = TRUE) {
+    // Determine the channel type.
+    $channel_type = Message::channelType($action_data);
+
+    // Create the initial message.
+    $message = new Message (array(
+      'channel' => new Channel ($channel_type, NULL, $channel_id),
+      'text' => $text,
+    ));
+
+    // Add additional information if this is an Update.
+    if ($channel_type == Channel::TYPE_UPDATE) {
+      $message->ts = $action_data->message_ts;
+      $message->attachments_clear = TRUE;
+    }
+
+    // If there was a previous action, add a Back button to return there.
+    if ($back && ($back_button = Attachment::backButton($action_data))) {
+      $message->addAttachment($back_button);
+    }
+
+    return $message;
+  }
+
+  /**
+   * Return an error message to player with instructions to contact Paul.
+   * @param $prefix_message STring message to prepend to the "contact Paul" details.
+   * @param $channel_id Slack channel ID to send this message back to.
+   */
+  public static function error ($prefix_message, $channel_id) {
+    return new Message (array(
+      'channel' => new Channel (Channel::TYPE_REPLY, NULL, $channel_id),
+      'text' => $prefix_message . (!empty($prefix_message) ? "\n" : '') . "Please contact help@lazyquest.dinelle.ca to let Paul know. Sorry!",
+    ));
+  }
+
+  /**
+   * Determine if we should use a Reply or Update for the Channel type based on ActionData.
+   */
+  public static function channelType (ActionData $action_data) {
+    return (!empty($action_data) && !empty($action_data->callback_id) && !empty($action_data->message_ts)) ? Channel::TYPE_UPDATE : Channel::TYPE_REPLY;
   }
 
 }

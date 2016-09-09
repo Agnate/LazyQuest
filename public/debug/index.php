@@ -38,7 +38,7 @@ if (isset($_GET['monkey123'])) {
 ?><!DOCTYPE html>
 <html>
   <head>
-    <title>RPG Debugger</title>
+    <title>Lazy Quest Debugger</title>
     <link rel="stylesheet" href="css/jquery-ui.css">
     <link rel="stylesheet" href="css/debug.css">
     <script src="js/jquery-2.1.4.min.js"></script>

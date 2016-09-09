@@ -1,10 +1,8 @@
 <?php
 
-use \PDO;
-use \Agnate\RPG\App;
-use \Agnate\RPG\Entity;
-
 namespace Agnate\RPG;
+
+use \PDO;
 
 class Team extends Entity {
 

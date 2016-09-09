@@ -1,7 +1,5 @@
 <?php
 
-use \Agnate\RPG\Database;
-
 namespace Agnate\RPG;
 
 class App {

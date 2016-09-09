@@ -1,7 +1,5 @@
 <?php
 
-use Agnate\RPG\Entity;
-
 namespace Agnate\RPG;
 
 class Guild extends Entity {
@@ -24,6 +22,13 @@ class Guild extends Entity {
   function __construct ($data = array()) {
     // Assign data to instance properties.
     parent::__construct($data);
+  }
+
+  /**
+   * Render the name and icon of the Guild.
+   */
+  public function display ($bold = TRUE, $display_icon = TRUE) {
+    return ($display_icon ? $this->icon.' ' : '') . ($bold ? '*' : '') . $this->name . ($bold ? '*' : '');
   }
 
   /**

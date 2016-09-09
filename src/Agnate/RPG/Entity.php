@@ -1,25 +1,24 @@
 <?php
 
-use \Agnate\RPG\App;
-use \Agnate\RPG\Database;
-
 namespace Agnate\RPG;
+
+use \PDO;
 
 class Entity extends EntityBasic {
 
   // Static vars
   static $db_table = '';
   static $default_class = '';
-  static $partials = array();
+  static $partials = array(); // Array of 'field_name' strings that can be partially searched in the database using MySQL '%LIKE%' syntax.
   static $primary_key = '';
-  static $relationships = array();
+  static $relationships = array(); // Array of 'field_name' => '\Agnate\RPG\Class' pairs to define the relationships to other Entity instances.
 
   /**
    * Load the related Entity based on the ID.
    * @param $property_name The name of the property on this Entity containing the ID.
    * @return Entity Returns the Entity loaded from the ID of the $property_name. Returns FALSE if none was found.
    */
-  public function loadRelationship($property_name) {
+  public function loadRelationship ($property_name) {
     if (empty(static::$relationships[$property_name])) return FALSE;
 
     // Pull the class name from the relationship array.
@@ -36,7 +35,7 @@ class Entity extends EntityBasic {
    * @param $find_partials Boolean whether or not to search for partial matches. Will only search partials on field names defined in static::$partials.
    * @return EntityDB Returns an entity typed as the class calling it. (Example: Guild::load() will return a Guild entity). Returns FALSE if nothing was found.
    */
-  public static function load($data, $find_partials = FALSE, $load_relationships = FALSE) {
+  public static function load ($data, $find_partials = FALSE, $load_relationships = FALSE) {
     // If we don't have a database table, we're done.
     if (empty(static::$db_table)) return FALSE;
 
@@ -79,7 +78,7 @@ class Entity extends EntityBasic {
 
     // Set the default class.
     if (static::$default_class != '' && class_exists(static::$default_class)) {
-      $query->setFetchMode(\PDO::FETCH_CLASS, static::$default_class, array());
+      $query->setFetchMode(PDO::FETCH_CLASS, static::$default_class, array());
     }
     
     $query->execute($new_data);
@@ -130,7 +129,7 @@ class Entity extends EntityBasic {
     $query = App::query($query);
 
     if (static::$default_class != '' && class_exists(static::$default_class)) {
-      $query->setFetchMode(\PDO::FETCH_CLASS, static::$default_class, array());
+      $query->setFetchMode(PDO::FETCH_CLASS, static::$default_class, array());
     }
     
     $query->execute($new_data);
@@ -149,7 +148,7 @@ class Entity extends EntityBasic {
    * Save the entity to the database.
    * @return Int Returns the ID of the primary key when saved. FALSE if it was unsuccessful at saving.
    */
-  public function save() {
+  public function save () {
     // If we don't have a database table, we're done.
     if (empty(static::$db_table)) return FALSE;
     if (empty(static::$primary_key)) return FALSE;
@@ -211,7 +210,7 @@ class Entity extends EntityBasic {
    *    'result' Contains the query execution's result
    *    'error' Contains any error messages received
    */
-  public function delete() {
+  public function delete () {
     // If we don't have a database table, we're done.
     if (empty(static::$db_table)) return FALSE;
     if (empty(static::$primary_key)) return FALSE;

@@ -1,0 +1,36 @@
+{
+  "title": "Quest",
+  "steps": [
+    {
+      "message": {
+        "text": "Test1",
+        "attachments": [
+          {
+            "pretext": "Attach1",
+            "actions": [
+              {
+                "name": "btn1",
+                "text": "Button1",
+                "type": "button",
+                "value": "btn1"
+              },
+              {
+                "name": "btn2",
+                "text": "Button2",
+                "type": "button",
+                "value": "btn2"
+              },
+              {
+                "name": "confirm",
+                "text": "Confirm",
+                "type": "button",
+                "value": "confirm"
+              }
+            ]
+          }
+        ]
+      }
+    }
+
+  ]
+}

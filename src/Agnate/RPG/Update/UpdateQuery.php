@@ -1,8 +1,8 @@
 <?php
 
-use \Agnate\RPG\App;
-
 namespace Agnate\RPG\Update;
+
+use \Agnate\RPG\App;
 
 class UpdateQuery {
 
@@ -27,7 +27,7 @@ class UpdateQuery {
    * Run the query.
    */
   public function execute () {
-    $query = \Agnate\RPG\App::query($this->statement);
+    $query = App::query($this->statement);
     return $query->execute($this->data);
   }
 }
