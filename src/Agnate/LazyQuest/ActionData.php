@@ -15,6 +15,7 @@ class ActionData extends EntityBasic {
   public $ts;
   public $team;
   public $debug;
+  public $user_info;
 
   // Additional variables for chat.update calls.
   public $callback_id;
@@ -30,7 +31,7 @@ class ActionData extends EntityBasic {
   protected $_guild;
   protected $_team;
   protected $_season;
-  protected $_action_list;
+  protected $_action_chain;
 
   /**
    * Construct the entity and set data inside.
@@ -63,8 +64,8 @@ class ActionData extends EntityBasic {
     $this->team();
     // Load the current Season if available.
     $this->season();
-    // Segment the action if available.
-    $this->actionList();
+    // Convert the action to an ActionChain if available.
+    $this->action();
   }
 
   /**
@@ -107,37 +108,21 @@ class ActionData extends EntityBasic {
 
   /**
    * Segment the action response from button presses.
-   * @return Array Returns the list of action strings in order of when they were clicked.
+   * @return ActionChain Returns the list of action strings in order of when they were clicked.
    */
-  public function actionList () {
-    if ($current_action = $this->currentAction()) {
-      $this->_action_list = explode('_', $current_action);
+  public function action () {
+    if (empty($this->_action_chain) && $current_action = $this->currentAction()) {
+      $this->_action_chain = ActionChain::create($current_action);
     }
-    return $this->_action_list;
+    return $this->_action_chain;
   }
 
   /**
-   * Get the current action response name.
+   * Get the current Slack action response name. Best to use action() instead.
+   * @see ActionData->action()
    */
   public function currentAction () {
     return !empty($this->actions) ? $this->actions[0]['name'] : '';
-  }
-
-  /**
-   * Get the previous action. Typically used to load the ActionState.
-   * @return String Returns the name of the action previously taken.
-   */
-  public function prevAction () {
-    $action_list = $this->actionList();
-    return count($action_list) > 1 ? implode('_', array_slice($action_list, 0, -1)) : '';
-  }
-
-  /**
-   * Get the next action that will require a response. Typically used to choose the fire a Trigger.
-   */
-  public function nextAction () {
-    $action_list = $this->actionList();
-    return count($action_list) > 0 ? end($action_list) : '';
   }
 
 }

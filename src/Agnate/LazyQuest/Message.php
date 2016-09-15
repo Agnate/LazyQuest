@@ -123,8 +123,10 @@ class Message extends EntityBasic {
 
   /**
    * Determine if we should use a Reply or Update for the Channel type based on ActionData.
+   * @param $action_data Instance of ActionData to extract information from about the Channel type.
+   * @return Constant Returns the Channel type to use. Usually will be either Channel::TYPE_REPLY or Channel::TYPE_UPDATE.
    */
-  public static function channelType (ActionData $action_data) {
+  public static function channelType ($action_data) {
     return (!empty($action_data) && !empty($action_data->callback_id) && !empty($action_data->message_ts)) ? Channel::TYPE_UPDATE : Channel::TYPE_REPLY;
   }
 
@@ -134,10 +136,11 @@ class Message extends EntityBasic {
    * @param $channel_id Slack channel ID to send this message back to.
    * @param $action_data Instance of ActionData which is used to add extra message items if necessary.
    * @param $back Whether or not to add a Back button to the message.
+   * @return Message Returns an instance of Message.
    */
   public static function reply ($text, $channel_id, $action_data = NULL, $back = TRUE) {
     // Determine the channel type.
-    $channel_type = Message::channelType($action_data);
+    $channel_type = static::channelType($action_data);
 
     // Create the initial message.
     $message = new Message (array(
@@ -164,10 +167,11 @@ class Message extends EntityBasic {
    * @param $prefix_message String message to prepend to the main message.
    * @param $channel_id Slack channel ID to send this message back to.
    * @param $action_data Instance of ActionData which is used to add extra message items if necessary.
+   * @return Message Returns an instance of Message.
    */
   public static function error ($prefix_message, $channel_id, $action_data = NULL) {
     $text = $prefix_message . (!empty($prefix_message) ? "\n" : '') . "Please contact help@lazyquest.dinelle.ca to let Paul know. Sorry!";
-    return Message::reply($text, $channel_id, $action_data, FALSE);
+    return static::reply($text, $channel_id, $action_data, FALSE);
   }
 
   /**
@@ -175,10 +179,23 @@ class Message extends EntityBasic {
    * @param $prefix_message String message to prepend to the main message.
    * @param $channel_id Slack channel ID to send this message back to.
    * @param $action_data Instance of ActionData which is used to add extra message items if necessary.
+   * @return Message Returns an instance of Message.
    */
   public static function noSeason ($prefix_message, $channel_id, $action_data = NULL) {
     $text = $prefix_message . (!empty($prefix_message) ? "\n" : '') . "There is no active season running. Please wait for Paul to start the next season.";
-    return Message::reply($text, $channel_id, $action_data, FALSE);
+    return static::reply($text, $channel_id, $action_data, FALSE);
+  }
+
+  /**
+   * Broadcast a message to all public channels registered for a specific team.
+   * @param $text The text string to send to the public channels.
+   * @return Message Returns an instance of Message.
+   */
+  public static function globally ($text) {
+    return new Message (array(
+      'channel' => new Channel (Channel::TYPE_PUBLIC),
+      'text' => $text,
+    ));
   }
 
 }

@@ -6,6 +6,10 @@ class App {
 
   protected static $started = FALSE;
   protected static $database;
+  protected static $logger;
+
+  protected static $logger_table = 'logs';
+  protected static $logger_primary_key = 'log_id';
   
 
   /* Log priorities: */
@@ -65,6 +69,57 @@ class App {
     if (!static::$started) static::start();
 
     return static::$database->prepare($query);
+  }
+
+  /**
+   * Get the logger instance so we can report stuff.
+   * @return \Zend\Log\Logger Instance of Logger from Zend framework.
+   */
+  public static function logger () {
+    if (!empty(static::$logger)) return static::$logger;
+
+    // Create logger.
+    static::$logger = new \Zend\Log\Logger;
+
+    // Create text log writer.
+    $txt_writer = new \Zend\Log\Writer\Stream (GAME_SERVER_LOG_FILE . '/app_' . date('Y-m-d-H-i-s') . '.log');
+    static::$logger->addWriter($txt_writer);
+
+    // Create the logger databalse table if it doesn't exist.
+    if (!static::database()->tableExists(static::$logger_table)) {
+      $fields = array();
+      $fields[] = "log_id INT(11) UNSIGNED AUTO_INCREMENT";
+      $fields[] = "type TINYINT(1) NOT NULL";
+      $fields[] = "type_name VARCHAR(30) NOT NULL";
+      $fields[] = "message LONGTEXT NOT NULL";
+      $fields[] = "created INT(10) UNSIGNED NOT NULL";
+
+      // Make the database.
+      static::database()->createTable(static::$logger_table, static::$logger_primary_key, $fields);
+    }
+
+    // Create database log writer.
+    $db_config = array(
+      'driver' => 'Pdo_Mysql',
+      'database' => DB_NAME,
+      'host' => DB_HOST,
+      'username' => DB_USER,
+      'password' => DB_PASS,
+    );
+    $db_mapping = array(
+      'priority'  => 'type',
+      'priorityName' => 'type_name',
+      'message'   => 'message',
+      'timestamp' => 'created',
+    );
+    $db = new \Zend\Db\Adapter\Adapter ($db_config);
+    $db_writer = new \Zend\Log\Writer\Db ($db, static::$logger_table, $db_mapping);
+    static::$logger->addWriter($db_writer);
+
+    // Intercept all exceptions.
+    \Zend\Log\Logger::registerErrorHandler(static::$logger);
+
+    return static::$logger;
   }
   
   /**

@@ -2,7 +2,9 @@
 
 namespace Agnate\LazyQuest\Action;
 
+use \Agnate\LazyQuest\ActionChain;
 use \Agnate\LazyQuest\ActionData;
+use \Agnate\LazyQuest\ActionState;
 use \Agnate\LazyQuest\EntityBasic;
 use \Agnate\LazyQuest\Action\ActionInterface;
 use \Agnate\LazyQuest\Message;
@@ -13,7 +15,7 @@ use \Agnate\LazyQuest\Message\AttachmentButtonConfirm;
 
 class GreetingAction extends EntityBasic implements ActionInterface {
 
-  public static function perform (ActionData $data, ActionState $state) {
+  public static function perform (ActionData $data, $state = NULL) {
     $button_groups = array();
 
     // If they haven't registered, they need to do that before anything else.
@@ -22,7 +24,7 @@ class GreetingAction extends EntityBasic implements ActionInterface {
         'title' => 'Registration',
         'text' => 'To play Lazy Quest, you must register your guild. This involves choosing a guild name and emoji which will represent you in Lazy Quest.',
         'buttons' => array(
-          array('text' => 'Register', 'value' => 'hello_register'),
+          array('text' => 'Register', 'value' => ActionChain::create(array('hello', 'register'))),
         ),
       );
     }
@@ -32,10 +34,10 @@ class GreetingAction extends EntityBasic implements ActionInterface {
         'title' => 'Questing and exploring',
         'text' => 'Send adventurers into the world',
         'buttons' => array(
-          array('text' => 'Map', 'value' => 'hello_map'),
-          array('text' => 'Explore', 'value' => 'hello_explore'),
-          array('text' => 'Quest', 'value' => 'hello_quest'),
-          array('text' => 'Raid', 'value' => 'hello_raid'),
+          array('text' => 'Map', 'value' => ActionChain::create(array('hello', 'map'))),
+          array('text' => 'Explore', 'value' => ActionChain::create(array('hello', 'explore'))),
+          array('text' => 'Quest', 'value' => ActionChain::create(array('hello', 'quest'))),
+          array('text' => 'Raid', 'value' => ActionChain::create(array('hello', 'raid'))),
         ),
       );
 
@@ -43,10 +45,10 @@ class GreetingAction extends EntityBasic implements ActionInterface {
         'title' => 'Inventory and items',
         'text' => 'View and trade consumables and relics',
         'buttons' => array(
-          array('text' => 'Inventory', 'value' => 'hello_inventory'),
-          array('text' => 'Buy', 'value' => 'hello_buy'),
-          array('text' => 'Sell', 'value' => 'hello_sell'),
-          array('text' => 'Give', 'value' => 'hello_give'),
+          array('text' => 'Inventory', 'value' => ActionChain::create(array('hello', 'inventory'))),
+          array('text' => 'Buy', 'value' => ActionChain::create(array('hello', 'buy'))),
+          array('text' => 'Sell', 'value' => ActionChain::create(array('hello', 'sell'))),
+          array('text' => 'Give', 'value' => ActionChain::create(array('hello', 'give'))),
         ),
       );
       // Per-item actions: use, equip, sell
@@ -55,10 +57,10 @@ class GreetingAction extends EntityBasic implements ActionInterface {
         'title' => 'Guild',
         'text' => 'Manage your guild and search for other players',
         'buttons' => array(
-          array('text' => 'Status', 'value' => 'hello_status'),
-          array('text' => 'Upgrade', 'value' => 'hello_upgrade'),
-          array('text' => 'Leaderboard', 'value' => 'hello_leaderboard'),
-          array('text' => 'Search', 'value' => 'hello_search'),
+          array('text' => 'Status', 'value' => ActionChain::create(array('hello', 'status'))),
+          array('text' => 'Upgrade', 'value' => ActionChain::create(array('hello', 'upgrade'))),
+          array('text' => 'Leaderboard', 'value' => ActionChain::create(array('hello', 'leaderboard'))),
+          array('text' => 'Search', 'value' => ActionChain::create(array('hello', 'search'))),
         ),
       );
 
@@ -66,8 +68,8 @@ class GreetingAction extends EntityBasic implements ActionInterface {
         'title' => 'Adventurers',
         'text' => 'View, promote, empower, equip, dismiss, and recruit adventurers',
         'buttons' => array(
-          array('text' => 'View', 'value' => 'hello_adventurers'),
-          array('text' => 'Recruit', 'value' => 'hello_recruit'),
+          array('text' => 'View', 'value' => ActionChain::create(array('hello', 'adventurers'))),
+          array('text' => 'Recruit', 'value' => ActionChain::create(array('hello', 'recruit'))),
         ),
       );
       // Per-adventurer actions: promote, empower, equip, dismiss
@@ -76,8 +78,8 @@ class GreetingAction extends EntityBasic implements ActionInterface {
         'title' => 'Colosseum',
         'text' => 'See and challenge other guilds in the Colosseum for fame and fortune',
         'buttons' => array(
-          array('text' => 'Requests', 'value' => 'hello_requests'),
-          array('text' => 'Challenge', 'value' => 'hello_challenge'),
+          array('text' => 'Requests', 'value' => ActionChain::create(array('hello', 'requests'))),
+          array('text' => 'Challenge', 'value' => ActionChain::create(array('hello', 'challenge'))),
         ),
       );
     }
@@ -92,10 +94,11 @@ class GreetingAction extends EntityBasic implements ActionInterface {
       ));
 
       foreach ($group['buttons'] as $button) {
+        $chain = $button['value']->encoded();
         $attachment->addButton(new AttachmentButton (array(
           'text' => $button['text'],
-          'value' => $button['value'],
-          'name' => !empty($button['name']) ? $button['name'] : $button['value'],
+          'value' => $chain,
+          'name' => !empty($button['name']) ? $button['name'] : $chain,
         )));
       }
 

@@ -15,6 +15,8 @@
 
 require_once('bootstrap.php');
 
+use \Agnate\LazyQuest\Updater;
+
 // Get the parameters passed in from the PHP command line.
 $shortopts = 'v:'; // Required
 $shortopts .= 'f::'; // Optional
@@ -34,5 +36,5 @@ $update_version = $opts['v'];
 $force_update = isset($opts['f']);
 
 // Get the updater so we can compare versions.
-$updater = \Agnate\LazyQuest\Updater::get();
+$updater = Updater::get();
 $updater->perform($update_version, $force_update);

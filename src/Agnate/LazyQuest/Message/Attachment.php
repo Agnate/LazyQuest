@@ -180,11 +180,22 @@ class Attachment extends EntityBasic {
     return implode('', $response);
   }
 
+
+  /* =================================
+     ______________  ________________
+    / ___/_  __/   |/_  __/  _/ ____/
+    \__ \ / / / /| | / /  / // /
+   ___/ // / / ___ |/ / _/ // /___
+  /____//_/ /_/  |_/_/ /___/\____/
+
+  ==================================== */
+
   /**
    * Create a Back button Attachment based on ActionData.
    */
   public static function backButton (ActionData $action_data) {
-    $prev_action = $action_data->prevAction();
+    if (empty($action_data->action())) return FALSE;
+    $prev_action = $action_data->action()->prevActionName();
     if (empty($action_data) || empty($prev_action)) return FALSE;
 
     return new Attachment (array(
@@ -192,6 +203,21 @@ class Attachment extends EntityBasic {
       'callback_id' => $action_data->currentAction(),
       'actions' => array(
         new AttachmentButton (array('text' => 'Back', 'value' => $prev_action, 'name' => $prev_action)),
+      ),
+    ));
+  }
+
+  /**
+   * Create an attachment with an approval button.
+   */
+  public static function approval ($callback_id, $approve_value, $cancel_value, $text = 'Is this correct?', $approve_text = 'Confirm', $cancel_text = 'Cancel', $title = 'Approval required') {
+    return new Attachment (array(
+      'title' => $title,
+      'text' => $text,
+      'callback_id' => $callback_id,
+      'actions' => array(
+        new AttachmentButton (array('text' => $approve_text, 'value' => $approve_value, 'name' => $approve_value, 'style' => AttachmentButton::STYLE_PRIMARY)),
+        new AttachmentButton (array('text' => $cancel_text, 'value' => $cancel_value, 'name' => $cancel_value)),
       ),
     ));
   }

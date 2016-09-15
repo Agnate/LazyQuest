@@ -2,7 +2,9 @@
 
 namespace Agnate\LazyQuest\Update;
 
+use \Agnate\LazyQuest\ActionState;
 use \Agnate\LazyQuest\Guild;
+use \Agnate\LazyQuest\Season;
 use \Agnate\LazyQuest\Team;
 
 class Update_0_0_1 extends UpdateBase {
@@ -31,6 +33,7 @@ class Update_0_0_1 extends UpdateBase {
     $fields = array();
     $fields[] = "gid INT(11) UNSIGNED AUTO_INCREMENT";
     $fields[] = "slack_id VARCHAR(255) NOT NULL";
+    $fields[] = "username VARCHAR(255) NOT NULL";
     $fields[] = "name VARCHAR(255) NOT NULL";
     $fields[] = "icon VARCHAR(255) NOT NULL";
     $fields[] = "team_id INT(11) NOT NULL";
@@ -43,6 +46,17 @@ class Update_0_0_1 extends UpdateBase {
     $fields[] = "duration INT(11) NOT NULL";
     $fields[] = "active TINYINT(1) NOT NULL";
     $queries[] = static::createTableStatement(Season::$db_table, Season::$primary_key, $fields);
+
+    // Create tables for ActionState.
+    $fields = array();
+    $fields[] = "asid INT(11) UNSIGNED AUTO_INCREMENT";
+    $fields[] = "team_id VARCHAR(255) NOT NULL";
+    $fields[] = "guild_id VARCHAR(255) NOT NULL";
+    $fields[] = "slack_id VARCHAR(255) NOT NULL";
+    $fields[] = "timestamp VARCHAR(255) NOT NULL"; // Slack timestamps are different, so save as string.
+    $fields[] = "action VARCHAR(255) NOT NULL";
+    $fields[] = "extra LONGTEXT NOT NULL";
+    $queries[] = static::createTableStatement(ActionState::$db_table, ActionState::$primary_key, $fields);
 
     return $queries;
   }

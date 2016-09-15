@@ -150,6 +150,9 @@ class ServerConnection extends EntityBasic {
 
     // print "Got a message: " . $data['text'] . "\n";
 
+    // Add additional information about the user.
+    $data['user_info'] = $user;
+
     // Create a Session and see if it triggers an action and delivers a Message array.
     $session = new Session;
     $messages = $session->run($data);
@@ -218,6 +221,9 @@ class ServerConnection extends EntityBasic {
     - Update the current command in queue with new results (if any).
     - Send back a payload update to refresh the buttons however necessary.
     */
+
+    // Add additional information about the user.
+    $data['user_info'] = $this->users[$data['user']['id']];
 
     // Start a new Session.
     $session = new Session;

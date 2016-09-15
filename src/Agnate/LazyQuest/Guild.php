@@ -6,6 +6,7 @@ class Guild extends Entity {
 
   public $gid;
   public $slack_id;
+  public $username;
   public $name;
   public $icon;
   public $team_id;
@@ -26,9 +27,32 @@ class Guild extends Entity {
 
   /**
    * Render the name and icon of the Guild.
+   * @param $pattern The pattern to display. Default pattern is "I *N*".
+   *    Accepts any Slack markup and the following tokens:
+   *    U - Username or Slack handle (example: @paul)
+   *    N - Guild name
+   *    I - Guild icon
    */
-  public function display ($bold = TRUE, $display_icon = TRUE) {
-    return ($display_icon ? $this->icon.' ' : '') . ($bold ? '*' : '') . $this->name . ($bold ? '*' : '');
+  public function display ($pattern = "I *N*") {
+    $tokens = array(
+      '|%U%|' => 'U',
+      '|%N%|' => 'N',
+      '|%I%|' => 'I',
+    );
+    // Replace single-letter tokens with more complex tokens.
+    $tokened = str_replace(array_values($tokens), array_keys($tokens), $pattern);
+
+    // Replace old single-letter tokens with actual values.
+    foreach ($tokens as $key => $value) {
+      switch ($value) {
+        case 'U': $tokens[$key] = '@' . $this->username; break;
+        case 'N': $tokens[$key] = $this->name; break;
+        case 'I': $tokens[$key] = $this->icon; break;
+      }
+    }
+
+    // Replace tokens with actual values.
+    return str_replace(array_keys($tokens), array_values($tokens), $tokened);
   }
 
   /**

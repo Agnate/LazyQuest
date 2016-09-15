@@ -42,26 +42,58 @@ class Session {
     $this->data = new ActionData ($data);
 
     // Make sure there is a Season running.
-    if (empty($data->season())) return array(Message::noSeason('', $data->channel, $data));
+    if (empty($this->data->season())) return array(Message::noSeason('', $this->data->channel, $this->data));
+
+    // See if there is an existing ActionState. If so, it means that this
+    // response might be related to the ActionState and we need to adjust the
+    // trigger text.
+    $this->state = ActionState::current(array(
+      'team_id' => $this->data->team()->tid,
+      'slack_id' => $this->data->user,
+    ));
+    if (!empty($this->state)) {
+      $action_chain = $this->state->action();
+      $action = $action_chain->currentActionName();
+
+      // Check all of the triggers to see if there are any Actions to run.
+      if ($action) {
+        foreach ($this->triggers as $trigger_key => $trigger) {
+          // If the input triggers a command, run the action associated with the trigger.
+          if ($trigger->isTriggered($action)) {
+            $response = $trigger->performAction($this->data, $this->state);
+            break;
+          }
+        }
+      }
+
+      // If there's no response, check the text against the 
+      if (empty($response)) {
+        // Delete the ActionState, invalidate the old action message, and test it as a regular command.
+        $message_clear = Message::reply("This message is now out of date.", $this->data->channel, $this->data);
+        $this->state->delete();
+      }
+    }
+
+    $action = $this->data->text;
 
     // Check all of the triggers to see if there are any Actions to run.
-    foreach ($this->triggers as $action => $trigger) {
+    foreach ($this->triggers as $trigger_key => $trigger) {
       // If the input triggers a command, run the action associated with the trigger.
-      if ($trigger->isTriggered($this->data->text)) {
-        $this->state = ActionState::current(array(
-          'slack_id' => $data->user,
-          'action' => $action,
-        ));
+      if ($trigger->isTriggered($action)) {
         $response = $trigger->performAction($this->data, $this->state);
         break;
       }
     }
 
     // If there's no response, return the "no command found" response.
-    if (empty($response)) return array(Message::reply('Command was invalid. Please type `help` to see a list of commands.', $this->data->channel));
+    if (empty($response))
+      $response = array(Message::reply('Command was invalid. Please type `help` to see a list of commands.', $this->data->channel));
 
     // Convert to array to simplify output handling.
     if (!is_array($response)) $response = array($response);
+    // Append the cleared message if applicable.
+    if (!empty($message_clear)) $response[] = $message_clear;
+    // Return the response.
     return $response;
   }
 
@@ -72,28 +104,30 @@ class Session {
   public function update(Array $data) {
     // Convert this to an ActionData instance to make it easier to manage.
     $this->data = new ActionData ($data);
-    $this->state = ActionState::load(array('slack_id' => $data->user, 'timestamp' => $data->message_ts);
+    $this->state = ActionState::load(array(
+      'team_id' => $this->data->team()->tid,
+      'slack_id' => $this->data->user,
+      'timestamp' => $this->data->message_ts,
+    ));
 
     // Make sure there is a Season running.
-    if (empty($data->season())) return array(Message::noSeason('', $data->channel, $data));
-
-    // NOTE: We will need to add some additional fields for all Messages that are Channel::TYPE_UPDATE:
-    //  'ts' -> This is the timestamp of the original message, which we need. Use $payload['message_ts'] as the value.
-    //  'attachments_clear' -> Set this to TRUE to clear out any attachments that might be there on original message when it gets updated.
-    //  'channel' -> This must always be Channel::TYPE_UPDATE and we use the $this->data->channel as the value.
+    if (empty($this->data->season())) return array(Message::noSeason('', $this->data->channel, $this->data));
 
     // Route the update through triggers to match the next action.
-    $next_action = $this->data->nextAction();
+    $action_chain = $this->data->action();
+    $action = $action_chain->currentActionName();
 
-    // print 'Next action: ' . $next_action . "\n";
+    App::logger()->notice('Action: ' . var_export($action, true));
 
     // Check all of the triggers to see if there are any Actions to run.
-    foreach ($this->triggers as $action => $trigger) {
-      // If the input triggers a command, run the action associated with the trigger.
-      if ($trigger->isTriggered($next_action)) {
-        // print 'Triggered: ' . $trigger->action . "\n";
-        $response = $trigger->performAction($this->data, $this->state);
-        break;
+    if ($action) {
+      foreach ($this->triggers as $trigger_key => $trigger) {
+        // If the input triggers a command, run the action associated with the trigger.
+        if ($trigger->isTriggered($action)) {
+          // print 'Triggered: ' . $trigger->action . "\n";
+          $response = $trigger->performAction($this->data, $this->state);
+          break;
+        }
       }
     }
 

@@ -7,6 +7,6 @@ use \Agnate\LazyQuest\ActionState;
 
 interface ActionInterface {
 
-  public static function perform (ActionData $data, ActionState $state);
+  public static function perform (ActionData $data, $state = NULL);
 
 }
