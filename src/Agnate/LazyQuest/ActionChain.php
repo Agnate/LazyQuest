@@ -4,27 +4,20 @@ namespace Agnate\LazyQuest;
 
 class ActionChain extends EntityBasic {
 
-  public $action;
+  public $actions; // Array of ActionLink instances.
 
-  /**
-   * Construct the entity and set data inside.
-   * @param $data Array of keyed values that are dynamically saved to the Entity if declared in the class.
-   */
-  function __construct ($data = array()) {
-    // Assign data to instance properties.
-    parent::__construct($data);
+  const SEPARATOR = '__';
 
-    // Segment the action into an Array.
-    $this->action = $this->decode($this->action);
-  }
+  static $fields_int;
+  static $fields_array = array('actions');
 
   /**
    * Get the current action requested by the user. Typically this is what is used to test Triggers against.
    * @return Array Return the last item of the action Array which is the action requested by the user.
    */
   public function currentAction () {
-    if (empty($this->action)) return FALSE;
-    return end($this->action);
+    if (empty($this->actions)) return FALSE;
+    return end($this->actions);
   }
 
   /**
@@ -32,9 +25,9 @@ class ActionChain extends EntityBasic {
    * @return String Return the last item of the action Array which is the action requested by the user.
    */
   public function currentActionName () {
-    if (empty($this->action)) return FALSE;
-    $action = end($this->action);
-    return count($action) > 0 ? $action[0] : FALSE;
+    if (empty($this->actions)) return FALSE;
+    $action = end($this->actions);
+    return $action->action;
   }
 
   /**
@@ -42,10 +35,10 @@ class ActionChain extends EntityBasic {
    * @return Array Return the second-last item of the action Array.
    */
   public function prevAction () {
-    if (empty($this->action)) return FALSE;
-    $count = count($this->action);
+    if (empty($this->actions)) return FALSE;
+    $count = count($this->actions);
     if ($count <= 1) return FALSE;
-    return $this->action[$count - 1];
+    return $this->actions[$count - 1];
   }
 
   /**
@@ -53,73 +46,44 @@ class ActionChain extends EntityBasic {
    * @return String Return the second-last item of the action Array.
    */
   public function prevActionName () {
-    if (empty($this->action)) return FALSE;
-    $count = count($this->action);
+    if (empty($this->actions)) return FALSE;
+    $count = count($this->actions);
     if ($count <= 1) return FALSE;
-    $action = $this->action[$count - 1];
-    return count($action) > 0 ? $action[0] : FALSE;
+    $action = $this->actions[$count - 1];
+    return $action->action;
   }
 
   /**
-   * Encode the action Array into a String.
-   * @return String Returns the encoded action Array as a String.s
+   * Convert this ActionChain instance into a String.
+   * @return String Returns this ActionChain instance encoded into a String.
    */
-  public function encoded () {
-    return $this->encode($this->action);
-  }
-
-  /**
-   * Convert a string action into an associative Array.
-   * @param $action The String action to decode into an Array.
-   * @return Array Returns the decoded action.
-   */
-  public function decode ($action) {
-    if (!is_string($action)) {
-      if (is_array($action)) return $action;
-      return array();
+  public function encode () {
+    // Encode all of the ActionLinks.
+    $actions = array();
+    foreach ($this->actions as $action) {
+      if (!($action instanceof \Agnate\LazyQuest\ActionLink)) continue;
+      $actions[] = $action->encode();
     }
 
     // Split by the primary separator.
-    $decoded = explode('__', $action);
-
-    // Check if the subaction needs any decoding.
-    foreach ($decoded as $key => $subaction) {
-      $decoded[$key] = explode('_', $subaction);
-      
-      // Check for third-level subaction.
-      foreach ($decoded[$key] as $optionskey => $options) {
-        $list = explode(',', $options);
-        if (count($list) <= 1) continue;
-        $decoded[$key][$optionskey] = $list;
-      }
-    }
-
-    return $decoded;
+    return implode(ActionChain::SEPARATOR, $actions);
   }
 
   /**
-   * Convert an action Array into a String.
-   * @param $action The Array action to encode into a String.
-   * @return String Returns the encoded action.
+   * Clone this ActionChain and give it a new subaction.
    */
-  public function encode ($action) {
-    if (!is_array($action)) return '';
+  // public function clone ($subaction = '', $options = '') {
+  //   $chain = ActionChain::create($this->encoded());
+  //   $last_action = $chain->action
+  // }
 
-    // Check if the subaction needs any decoding.
-    foreach ($action as $key => &$subaction) {
-      if (!is_array($subaction)) continue;
-      // Check for third-level subaction.
-      foreach ($subaction as $optionskey => $list) {
-        if (!is_array($list)) continue;
-        $subaction[$optionskey] = implode(',', $list);
-      }
-
-      $action[$key] = implode('_', $subaction);
-    }
-
-    // Split by the primary separator.
-    return implode('__', $action);
-  }
+  /**
+   * Add a sub-action to an action. Defaults to the current action if none is specified.
+   */
+  // public function addSubAction ($subaction, $action_name = NULL) {
+  //   $last_action = $this->prevAction();
+  //   $last_action
+  // }
 
   /* =================================
      ______________  ________________
@@ -136,6 +100,22 @@ class ActionChain extends EntityBasic {
    * @return ActionChain Returns a new instance of ActionChain.
    */
   public static function create ($action) {
-    return new ActionChain (array('action' => $action));
+    return new ActionChain (array('actions' => static::decode($action)));
+  }
+
+  /**
+   * Decode an action string into a list of ActionLinks.
+   */
+  public static function decode ($action_string) {
+    // Split up the action chain by the separator.
+    $actions = explode(ActionChain::SEPARATOR, $action_string);
+
+    // For each value, decode to an ActionLink.
+    foreach ($actions as $key => $value) {
+      $actions[$key] = ActionLink::create($value);
+    }
+
+    // Return the list of links.
+    return $actions;
   }
 }

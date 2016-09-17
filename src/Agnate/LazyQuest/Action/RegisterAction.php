@@ -4,6 +4,7 @@ namespace Agnate\LazyQuest\Action;
 
 use \Agnate\LazyQuest\ActionData;
 use \Agnate\LazyQuest\ActionState;
+use \Agnate\LazyQuest\App;
 use \Agnate\LazyQuest\EntityBasic;
 use \Agnate\LazyQuest\Message;
 use \Agnate\LazyQuest\Message\Attachment;
@@ -134,9 +135,13 @@ class RegisterAction extends EntityBasic implements ActionInterface {
     // Wipe out the information that would cause a chat.update, as we need a new message made.
     $data->callback_id = NULL;
 
+    // Action chain.
+    $action = $state->action();
+
+
     // Perform the next step.
     $message = Message::reply("You have chosen:\n" . $state->extra['icon'] . ' ' . $state->extra['name'], $data->channel, $data);
-    $message->addAttachment(Attachment::approval($state->action()->encoded(), 'confirm', 'cancel'));
+    $message->addAttachment(Attachment::approval($state->action()->encode(), 'confirm', 'cancel'));
     return $message;
   }
 

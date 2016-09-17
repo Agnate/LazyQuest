@@ -3,12 +3,33 @@
 require_once('../../bootstrap.php');
 
 
-print Agnate\LazyQuest\Action\RegisterAction::nextStep('name');
+$chain_text = 'action1';
+$chain = Agnate\LazyQuest\ActionChain::decode($chain_text);
+d($chain_text, $chain);
+
+$chain_text = 'action1__action2';
+$chain = Agnate\LazyQuest\ActionChain::decode($chain_text);
+d($chain_text, $chain);
+
+$chain_text = 'action1|subaction1';
+$chain = Agnate\LazyQuest\ActionChain::decode($chain_text);
+d($chain_text, $chain);
+
+$chain_text = 'action1|subaction1|opt1,opt2';
+$chain = Agnate\LazyQuest\ActionChain::decode($chain_text);
+d($chain_text, $chain);
+
+$chain_text = 'action1|subaction1|opt1,opt2__action2';
+$chain = Agnate\LazyQuest\ActionChain::decode($chain_text);
+d($chain_text, $chain);
+
+$chain_text = 'action1|subaction1|opt1,opt2__action2|subaction2|opt3,opt4';
+$chain = Agnate\LazyQuest\ActionChain::decode($chain_text);
+d($chain_text, $chain);
+
+// print Agnate\LazyQuest\Action\RegisterAction::nextStep('name');
 
 
-
-// $chain = Agnate\LazyQuest\ActionChain::create(array('hello', 'challenge'));
-// print $chain->encoded();
 
 
 // Create a server instance and start it up.

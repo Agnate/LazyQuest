@@ -1,0 +1,5 @@
+<testsuites>
+  <testsuite name="Lazy Quest Test Suite">
+    <directory suffix="Test.php">tests</directory>
+  </testsuite>
+</testsuites>

@@ -210,7 +210,7 @@ class Attachment extends EntityBasic {
   /**
    * Create an attachment with an approval button.
    */
-  public static function approval ($callback_id, $approve_value, $cancel_value, $text = 'Is this correct?', $approve_text = 'Confirm', $cancel_text = 'Cancel', $title = 'Approval required') {
+  public static function approval ($callback_id, $approve_value = 'confirm', $cancel_value = 'cancel', $text = 'Is this correct?', $approve_text = 'Confirm', $cancel_text = 'Cancel', $title = 'Approval required') {
     return new Attachment (array(
       'title' => $title,
       'text' => $text,

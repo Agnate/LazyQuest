@@ -10,5 +10,14 @@
     "frlnc/php-slack": "*",
     "devristo/phpws": "dev-master",
     "zendframework/zend-db": "2.*"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "5.5.*"
+  },
+  "autoload": {
+    "psr-0": {
+      "Agnate": "src/",
+      "Agnate\\Tests": "tests/"
+    }
   }
 }

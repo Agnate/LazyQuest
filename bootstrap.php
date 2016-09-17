@@ -7,4 +7,6 @@ ini_set("display_errors", 1);
 // Load the necessaries.
 require_once('config.php');
 require_once('vendor/autoload.php');
-require_once('src/autoload.php');
+
+// Autoload game code - not needed if using composer's autoload.
+// require_once('src/autoload.php');
