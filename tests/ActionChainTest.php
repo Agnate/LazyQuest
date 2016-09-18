@@ -19,11 +19,24 @@ class ActionChainTest extends TestCase {
 
   public function decodeProvider() {
     return [
-      'plain action' => ['action1', array(new ActionLink (array('action' => 'action1')))],
-      // 'action and subaction' => ['action1|subaction1', array('action' => 'action1', 'subaction' => 'subaction1')],
-      // 'all parts' => ['action1|subaction1|opt1,opt2', array('action' => 'action1', 'subaction' => 'subaction1', 'options' => array('opt1', 'opt2'))],
-      // 'missing subaction' => ['action1||opt1,opt2', array('action' => 'action1', 'subaction' => '', 'options' => array('opt1', 'opt2'))],
-      // 'empty options' => ['action1|subaction1|', array('action' => 'action1', 'subaction' => 'subaction1')],
+      'simple action' => ['action1', array(
+        new ActionLink (array('action' => 'action1')),
+      )],
+      'action with subaction' => ['action1|subaction1', array(
+        new ActionLink (array('action' => 'action1', 'subaction' => 'subaction1')),
+      )],
+      'two actions' => ['action1__action2', array(
+        new ActionLink (array('action' => 'action1')),
+        new ActionLink (array('action' => 'action2')),
+      )],
+      'full action + simple action' => ['action1|subaction1|opt1,opt2__action2', array(
+        new ActionLink (array('action' => 'action1', 'subaction' => 'subaction1', 'options' => array('opt1', 'opt2'))),
+        new ActionLink (array('action' => 'action2')),
+      )],
+      'two full actions' => ['action1|subaction1|opt1,opt2__action2|subaction2|opt3,opt4', array(
+        new ActionLink (array('action' => 'action1', 'subaction' => 'subaction1', 'options' => array('opt1', 'opt2'))),
+        new ActionLink (array('action' => 'action2', 'subaction' => 'subaction2', 'options' => array('opt3', 'opt4'))),
+      )],
     ];
   }
 }

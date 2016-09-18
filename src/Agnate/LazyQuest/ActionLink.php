@@ -23,7 +23,8 @@ class ActionLink extends EntityBasic {
   public function encode () {
     $encoded = array();
     $encoded[] = $this->action;
-    if (!empty($this->subaction)) $encoded[] = $this->subaction;
+    if (!empty($this->subaction) || !empty($this->options))
+      $encoded[] = !empty($this->subaction) ? $this->subaction : '';
     if (!empty($this->options)) $encoded[] = implode(ActionLink::OPTION_SEPARATOR, $this->options);
 
     // Split by the primary separator.
