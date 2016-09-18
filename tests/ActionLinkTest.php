@@ -10,26 +10,39 @@ class ActionLinkTest extends TestCase {
   /**
    * @dataProvider actionStringProvider
    */
-  public function testConstruct($action_string, $action_array, $valid_action_string = NULL) {
-    $link = new ActionLink ($action_array);
-    $this->assertEquals($link->action, $action_array['action']);
-    $this->assertEquals($link->subaction, $action_array['subaction']);
+  public function testGeneral($action_string, $action_array, $valid_action_string = NULL) {
 
-    // If there are options, test them.
+    // __construct() & properties
+    $link = new ActionLink ($action_array);
+    // $action
+    $this->assertEquals($link->action, $action_array['action']);
+    // $subaction
+    $this->assertEquals($link->subaction, $action_array['subaction']);
+    // $options
     if (empty($action_array['options'])) $options = array();
     else $options = $action_array['options'];
     $this->assertEquals($link->options, $options);
 
-    // Test creating from ActionLink static function to see if it matches.
+
+    // ----------------------------
+    // ActionLink static functions
+    // ----------------------------
+
+    // decode()
+    $this->assertEquals(ActionLink::decode($action_string), $action_array);
+
+    // create()
     $this->assertEquals(ActionLink::create($action_string), $link);
 
-    // Test encoding against the valid action string (if provided).
-    if (is_string($valid_action_string)) $this->assertEquals($link->encode(), $valid_action_string);
-    // Otherwise test against the primary action string.
-    else $this->assertEquals($link->encode(), $action_string);
 
-    // Decode the action into an Array.
-    $this->assertEquals(ActionLink::decode($action_string), $action_array);
+    // ------------------------------
+    // ActionLink instance functions
+    // ------------------------------
+
+    // encoding()
+    // Test encoding against either the valid action string (if provided) or the original action string.
+    if (is_string($valid_action_string)) $this->assertEquals($link->encode(), $valid_action_string);
+    else $this->assertEquals($link->encode(), $action_string);
   }
 
   public function actionStringProvider() {
@@ -43,6 +56,7 @@ class ActionLinkTest extends TestCase {
       'all parts' => ['action1|subaction1|opt1,opt2', array('action' => 'action1', 'subaction' => 'subaction1', 'options' => array('opt1', 'opt2'))],
       'missing subaction' => ['action1||opt1,opt2', array('action' => 'action1', 'subaction' => '', 'options' => array('opt1', 'opt2'))],
       'empty options' => ['action1|subaction1|', array('action' => 'action1', 'subaction' => 'subaction1'), 'action1|subaction1'],
+      'extra separator on end' => ['action1|subaction1|opt1,opt2|', array('action' => 'action1', 'subaction' => 'subaction1', 'options' => array('opt1', 'opt2')), 'action1|subaction1|opt1,opt2'],
     ];
   }
 }

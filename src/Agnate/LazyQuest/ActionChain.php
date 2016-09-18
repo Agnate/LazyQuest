@@ -38,7 +38,7 @@ class ActionChain extends EntityBasic {
     if (empty($this->actions)) return FALSE;
     $count = count($this->actions);
     if ($count <= 1) return FALSE;
-    return $this->actions[$count - 1];
+    return $this->actions[$count - 2];
   }
 
   /**
@@ -49,7 +49,7 @@ class ActionChain extends EntityBasic {
     if (empty($this->actions)) return FALSE;
     $count = count($this->actions);
     if ($count <= 1) return FALSE;
-    $action = $this->actions[$count - 1];
+    $action = $this->actions[$count - 2];
     return $action->action;
   }
 
@@ -108,11 +108,13 @@ class ActionChain extends EntityBasic {
    */
   public static function decode ($action_string) {
     // Split up the action chain by the separator.
-    $actions = explode(ActionChain::SEPARATOR, $action_string);
+    $strings = explode(ActionChain::SEPARATOR, $action_string);
 
     // For each value, decode to an ActionLink.
-    foreach ($actions as $key => $value) {
-      $actions[$key] = ActionLink::create($value);
+    $actions = array();
+    foreach ($strings as $value) {
+      if (empty($value)) continue;
+      $actions[] = ActionLink::create($value);
     }
 
     // Return the list of links.
