@@ -191,18 +191,23 @@ class Attachment extends EntityBasic {
   ==================================== */
 
   /**
-   * Create a Back button Attachment based on ActionData.
+   * Create a Cancel button Attachment based on ActionData.
    */
-  public static function backButton (ActionData $action_data) {
-    if (empty($action_data->action())) return FALSE;
-    $prev_action = $action_data->action()->prevActionName();
-    if (empty($action_data) || empty($prev_action)) return FALSE;
+  public static function cancelButton (ActionData $action_data) {
+    if (empty($action_data)) return FALSE;
+
+    $chain = $action_data->actionChain();
+    if (empty($chain)) return FALSE;
+
+    $back = $chain->goBack();
+    if (empty($back->actions)) return FALSE;
+    $back_encoded = $back->encode();
 
     return new Attachment (array(
       'title' => 'Other actions',
-      'callback_id' => $action_data->currentAction(),
+      'callback_id' => $action_data->callbackID('cancel'), // $action_data->currentAction(),
       'actions' => array(
-        new AttachmentButton (array('text' => 'Back', 'value' => $prev_action, 'name' => $prev_action)),
+        new AttachmentButton (array('text' => 'Cancel', 'value' => $back_encoded, 'name' => $back_encoded)),
       ),
     ));
   }
@@ -210,7 +215,7 @@ class Attachment extends EntityBasic {
   /**
    * Create an attachment with an approval button.
    */
-  public static function approval ($callback_id, $approve_value = 'confirm', $cancel_value = 'cancel', $text = 'Is this correct?', $approve_text = 'Confirm', $cancel_text = 'Cancel', $title = 'Approval required') {
+  public static function approval ($callback_id, $approve_value, $cancel_value, $text = 'Is this correct?', $approve_text = 'Confirm', $cancel_text = 'Cancel', $title = 'Approval required') {
     return new Attachment (array(
       'title' => $title,
       'text' => $text,

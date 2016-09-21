@@ -36,7 +36,7 @@ class ActionState extends Entity {
     parent::__construct($data);
     
     // Convert $this->action to ActionChain.
-    $this->action();
+    $this->actionChain();
     // if (!empty($this->action) && is_string($this->action))
     //   $this->action = ActionChain::create($this->action);
     // else if (empty($this->action) || !($this->action instanceof \Agnate\RPG\ActionChain))
@@ -47,7 +47,7 @@ class ActionState extends Entity {
    * Get the ActionChain instance of the action.
    * @return ActionChain Returns the action as an ActionChain.
    */
-  public function action () {
+  public function actionChain () {
     if (empty($this->_action_chain)) {
       $this->_action_chain = $this->convertAction($this->action);
     }
@@ -62,6 +62,15 @@ class ActionState extends Entity {
    */
   public function convertAction ($action) {
     return ActionChain::create($action);
+  }
+
+  /**
+   * Generate a callback ID based on unique data.
+   * @param $suffix String to add to the end of the callback ID.
+   * @return String Returns a callbackID unique to the Slack user.
+   */
+  public function callbackID ($suffix = NULL) {
+    return $this->slack_id . '__' . $this->getRelationship('team_id')->team_id . '__' . $this->timestamp . (!empty($suffix) ? '__' . $suffix : '');
   }
 
 

@@ -135,10 +135,10 @@ class Message extends EntityBasic {
    * @param $text String message to send to user.
    * @param $channel_id Slack channel ID to send this message back to.
    * @param $action_data Instance of ActionData which is used to add extra message items if necessary.
-   * @param $back Whether or not to add a Back button to the message.
+   * @param $cancel Whether or not to add a Cancel button to the message.
    * @return Message Returns an instance of Message.
    */
-  public static function reply ($text, $channel_id, $action_data = NULL, $back = TRUE) {
+  public static function reply ($text, $channel_id, $action_data = NULL, $cancel = TRUE, $clear_attachments = TRUE) {
     // Determine the channel type.
     $channel_type = static::channelType($action_data);
 
@@ -151,12 +151,12 @@ class Message extends EntityBasic {
     // Add additional information if this is an Update.
     if ($channel_type == Channel::TYPE_UPDATE) {
       $message->ts = $action_data->message_ts;
-      $message->attachments_clear = TRUE;
+      $message->attachments_clear = $clear_attachments;
     }
 
-    // If there was a previous action, add a Back button to return there.
-    if ($back && ($back_button = Attachment::backButton($action_data))) {
-      $message->addAttachment($back_button);
+    // If there was a previous action, add a Cancel button to return there.
+    if ($cancel && ($cancel_button = Attachment::cancelButton($action_data))) {
+      $message->addAttachment($cancel_button);
     }
 
     return $message;

@@ -65,7 +65,7 @@ class ActionData extends EntityBasic {
     // Load the current Season if available.
     $this->season();
     // Convert the action to an ActionChain if available.
-    $this->action();
+    $this->actionChain();
   }
 
   /**
@@ -110,7 +110,7 @@ class ActionData extends EntityBasic {
    * Segment the action response from button presses.
    * @return ActionChain Returns the list of action strings in order of when they were clicked.
    */
-  public function action () {
+  public function actionChain () {
     if (empty($this->_action_chain) && $current_action = $this->currentAction()) {
       $this->_action_chain = ActionChain::create($current_action);
     }
@@ -118,11 +118,20 @@ class ActionData extends EntityBasic {
   }
 
   /**
-   * Get the current Slack action response name. Best to use action() instead.
-   * @see ActionData->action()
+   * Get the current Slack action response name. Best to use actionChain() instead.
+   * @see ActionData->actionChain()
    */
   public function currentAction () {
     return !empty($this->actions) ? $this->actions[0]['name'] : '';
+  }
+
+  /**
+   * Generate a callback ID based on unique data.
+   * @param $suffix String to add to the end of the callback ID.
+   * @return String Returns a callbackID unique to the Slack user.
+   */
+  public function callbackID ($suffix = NULL) {
+    return $this->user . '__' . $this->team . (!empty($suffix) ? '__' . $suffix : '');
   }
 
 }

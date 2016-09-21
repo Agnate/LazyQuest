@@ -17,6 +17,16 @@ class ActionLink extends EntityBasic {
 
 
   /**
+   * Alter this ActionLink instance with a subaction and optional options. Primary used by ActionChain.
+   * @param $subaction String sub-action to store on the action.
+   * @param $options Array of options to set on the action.
+   */
+  public function alter ($subaction, $options = NULL) {
+    $this->subaction = $subaction;
+    if ($options !== NULL && is_array($options)) $this->options = $options;
+  }
+
+  /**
    * Encode this ActionLink instance into a String.
    * @return String Returns this ActionLink instance encoded into a String.
    */

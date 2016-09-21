@@ -6,6 +6,8 @@ use \PDO;
 
 class Entity extends EntityBasic {
 
+  protected $_relationships = array();
+
   // Static vars
   static $db_table = '';
   static $default_class = '';
@@ -31,7 +33,7 @@ class Entity extends EntityBasic {
    * @param $property_name The name of the property on this Entity containing the ID.
    * @return Entity Returns the Entity loaded from the ID of the $property_name. Returns FALSE if none was found.
    */
-  public function loadRelationship ($property_name) {
+  protected function loadRelationship ($property_name) {
     if (empty(static::$relationships[$property_name])) return FALSE;
 
     // Pull the class name from the relationship array.
@@ -40,6 +42,19 @@ class Entity extends EntityBasic {
 
     // Load the Entity.
     return $class_name::load(array($class_name::$primary_key => $this->{$property_name}));
+  }
+
+  /**
+   * Get the related Entity for the property.
+   * @param $property_name The name of the property on this Entity containing the ID.
+   * @return Entity Returns the Entity loaded from the ID of the $property_name. Returns FALSE if none was found.
+   */
+  public function getRelationship ($property_name) {
+    if (!isset($this->_relationships[$property_name])) {
+      $this->_relationships[$property_name] = $this->loadRelationship($property_name);
+    }
+
+    return $this->_relationships[$property_name];
   }
 
   /**

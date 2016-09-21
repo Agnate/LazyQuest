@@ -12,6 +12,18 @@ class ActionChain extends EntityBasic {
   static $fields_array = array('actions');
 
   /**
+   * Implements __clone().
+   */
+  public function __clone () {
+    // Clone ActionLink instances.
+    if (is_array($this->actions)) {
+      foreach ($this->actions as &$action_link) {
+        $action_link = clone $action_link;
+      }
+    }
+  }
+
+  /**
    * Get the current action requested by the user. Typically this is what is used to test Triggers against.
    * @return Array Return the last item of the action Array which is the action requested by the user.
    */
@@ -70,20 +82,24 @@ class ActionChain extends EntityBasic {
   }
 
   /**
-   * Clone this ActionChain and give it a new subaction.
+   * Add a sub-action to an action (defaults to current action). This will overwrite any existing subaction on the action.
+   * @param $subaction String sub-action to store on the action.
+   * @param $options Array of options to set on the action.
+   * @param $action ActionLink instance of the action to alter.
    */
-  // public function clone ($subaction = '', $options = '') {
-  //   $chain = ActionChain::create($this->encoded());
-  //   $last_action = $chain->action
-  // }
+  public function alterActionLink ($subaction, $options = NULL, $action = NULL) {
+    if (empty($action)) $action = $this->currentAction();
+    $action->alter($subaction, $options);
+  }
 
   /**
-   * Add a sub-action to an action. Defaults to the current action if none is specified.
+   * Return a clone of this ActionChain and remove the previous ActionLink.
    */
-  // public function addSubAction ($subaction, $action_name = NULL) {
-  //   $last_action = $this->prevAction();
-  //   $last_action
-  // }
+  public function goBack () {
+    $chain = clone $this;
+    array_pop($chain->actions);
+    return $chain;
+  }
 
   /* =================================
      ______________  ________________
@@ -96,11 +112,42 @@ class ActionChain extends EntityBasic {
 
   /**
    * Create a new ActionChain from a String.
-   * @param $action String or Array action to convert to an ActionChain.
+   * @param $args Can take one of many kinds of arguments:
+   *    String - convert an action String into a new ActionChain by decoding it.
+   *    Array - create from an Array of ActionLink instances.
+   *    ActionLink - take all arguments (must all be ActionLink instances) and create a new ActionChain.
    * @return ActionChain Returns a new instance of ActionChain.
    */
-  public static function create ($action) {
-    return new ActionChain (array('actions' => static::decode($action)));
+  public static function create () {
+    $args = func_get_args();
+    $count = count($args);
+
+    // Nothing? Return empty chain.
+    if ($count <= 0)
+      return new ActionChain;
+
+    // If this is a String, decode.
+    if ($count == 1) {
+      if (is_string($args[0])) {
+        return new ActionChain (array('actions' => static::decode($args[0])));
+      }
+      else if (is_array($args[0])) {
+        // Only allow instances of ActionLink.
+        $array = array_filter($args[0], array('Agnate\LazyQuest\ActionChain', 'filterByActionLink'));
+        return new ActionChain (array('actions' => $array));
+      }
+    }
+
+    // Check that the rest are ActionLink instances.
+    $links = array_filter($args, array('Agnate\LazyQuest\ActionChain', 'filterByActionLink'));
+    return new ActionChain (array('actions' => $links));
+  }
+
+  /**
+   * An array_filter to filter by instances of ActionLink.
+   */
+  protected static function filterByActionLink ($elem) {
+    return ($elem instanceof ActionLink);
   }
 
   /**

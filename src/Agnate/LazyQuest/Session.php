@@ -52,8 +52,8 @@ class Session {
       'slack_id' => $this->data->user,
     ));
     if (!empty($this->state)) {
-      $action_chain = $this->state->action();
-      $action = $action_chain->currentActionName();
+      $chain = $this->state->actionChain();
+      $action = $chain->currentActionName();
 
       // Check all of the triggers to see if there are any Actions to run.
       if ($action) {
@@ -107,17 +107,19 @@ class Session {
     $this->state = ActionState::load(array(
       'team_id' => $this->data->team()->tid,
       'slack_id' => $this->data->user,
-      'timestamp' => $this->data->message_ts,
+      // 'timestamp' => $this->data->message_ts,
     ));
 
     // Make sure there is a Season running.
     if (empty($this->data->season())) return array(Message::noSeason('', $this->data->channel, $this->data));
 
     // Route the update through triggers to match the next action.
-    $action_chain = $this->data->action();
-    $action = $action_chain->currentActionName();
+    $chain = $this->data->actionChain();
+    $action = $chain->currentActionName();
 
     App::logger()->notice('Action: ' . var_export($action, true));
+    App::logger()->notice('Data: ' . var_export($this->data, true));
+    App::logger()->notice('State: ' . var_export($this->state, true));
 
     // Check all of the triggers to see if there are any Actions to run.
     if ($action) {

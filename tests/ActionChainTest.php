@@ -11,12 +11,12 @@ class ActionChainTest extends TestCase {
   /**
    * @dataProvider actionStringProvider
    */
-  public function testGeneral($action_string, $action_array, $valid_action_string = NULL) {
+  public function testGeneral($data) {
 
     // __construct() & properties
-    $chain = new ActionChain (array('actions' => $action_array));
+    $chain = new ActionChain (['actions' => $data['actions']]);
     // $action
-    $this->assertEquals($chain->actions, $action_array);
+    $this->assertEquals($chain->actions, $data['actions']);
 
 
     // -----------------------------
@@ -24,10 +24,14 @@ class ActionChainTest extends TestCase {
     // -----------------------------
 
     // decode()
-    $this->assertEquals(ActionChain::decode($action_string), $action_array);
+    $this->assertEquals(ActionChain::decode($data['encoded']), $data['actions']);
 
-    // create()
-    $this->assertEquals(ActionChain::create($action_string), $chain);
+    // create() [using String]
+    $this->assertEquals(ActionChain::create($data['encoded']), $chain);
+    // create() [using Array]
+    $this->assertEquals(ActionChain::create($data['actions']), $chain);
+    // create() [using params as ActionLink instances]
+    $this->assertEquals(forward_static_call_array(['Agnate\LazyQuest\ActionChain', 'create'], $data['actions']), $chain);
 
 
     // -------------------------------
@@ -36,11 +40,11 @@ class ActionChainTest extends TestCase {
 
     // encoding()
     // Test encoding against either the valid action string (if provided) or the original action string.
-    if (is_string($valid_action_string)) $this->assertEquals($chain->encode(), $valid_action_string);
-    else $this->assertEquals($chain->encode(), $action_string);
+    if (isset($data['decoded']) && is_string($data['decoded'])) $this->assertEquals($chain->encode(), $data['decoded']);
+    else $this->assertEquals($chain->encode(), $data['encoded']);
 
     // currentAction()
-    $current = end($action_array);
+    $current = end($data['actions']);
     $this->assertEquals($chain->currentAction(), $current);
 
     // currentActionName()
@@ -49,48 +53,122 @@ class ActionChainTest extends TestCase {
     // prevAction()
     // prevActionName()
     // Can only be tested if there's two or more ActionLink instances in the chain.
-    $length = count($action_array);
+    $length = count($data['actions']);
     if ($length > 1) {
-      $prev = $action_array[$length - 2];
+      $prev = $data['actions'][$length - 2];
       $this->assertEquals($chain->prevAction(), $prev);
       $this->assertEquals($chain->prevActionName(), $prev->action);
     }
 
+    /**
+     * alterActionLink()
+     * @see testAlterActionLink 
+     */
+
   }
 
   public function actionStringProvider() {
-    // Parameters for each test:
-    //    [0] Action string
-    //    [1] Array result from decoding
-    //    [2] (optional) Valid encoded action string if not the same as [0]
+    // Parameters for each test (using nested Array):
+    //    'encoded' => Action string
+    //    'decoded' => (optional) Valid encoded action string if not the same as [0]
+    //    'actions' => Array of ActionLink instances result from decoding
+    //    'altered' => ActionLink of altered data.
+
     return [
-      'simple action' => ['action1', array(
-        new ActionLink (array('action' => 'action1')),
-      )],
+      'simple action' => [[
+        'encoded' => 'action1',
+        'actions' => [
+          new ActionLink (['action' => 'action1']),
+        ],
+      ]],
 
-      'action with subaction' => ['action1|subaction1', array(
-        new ActionLink (array('action' => 'action1', 'subaction' => 'subaction1')),
-      )],
+      'action with subaction' => [[
+        'encoded' => 'action1|subaction1',
+        'actions' => [
+          new ActionLink (['action' => 'action1', 'subaction' => 'subaction1']),
+        ],
+      ]],
 
-      'two actions' => ['action1__action2', array(
-        new ActionLink (array('action' => 'action1')),
-        new ActionLink (array('action' => 'action2')),
-      )],
+      'two actions' => [[
+        'encoded' => 'action1__action2',
+        'actions' => [
+          new ActionLink (['action' => 'action1']),
+          new ActionLink (['action' => 'action2']),
+        ],
+      ]],
 
-      'two actions + empty end' => ['action1__action2__', array(
-        new ActionLink (array('action' => 'action1')),
-        new ActionLink (array('action' => 'action2')),
-      ), 'action1__action2'],
+      'two actions + empty end' => [[
+        'encoded' => 'action1__action2__',
+        'decoded' => 'action1__action2',
+        'actions' => [
+          new ActionLink (['action' => 'action1']),
+          new ActionLink (['action' => 'action2']),
+        ],
+      ]],
 
-      'full action + simple action' => ['action1|subaction1|opt1,opt2__action2', array(
-        new ActionLink (array('action' => 'action1', 'subaction' => 'subaction1', 'options' => array('opt1', 'opt2'))),
-        new ActionLink (array('action' => 'action2')),
-      )],
+      'full action + simple action' => [[
+        'encoded' => 'action1|subaction1|opt1,opt2__action2',
+        'actions' => [
+          new ActionLink (['action' => 'action1', 'subaction' => 'subaction1', 'options' => ['opt1', 'opt2']]),
+          new ActionLink (['action' => 'action2']),
+        ],
+      ]],
       
-      'two full actions' => ['action1|subaction1|opt1,opt2__action2|subaction2|opt3,opt4', array(
-        new ActionLink (array('action' => 'action1', 'subaction' => 'subaction1', 'options' => array('opt1', 'opt2'))),
-        new ActionLink (array('action' => 'action2', 'subaction' => 'subaction2', 'options' => array('opt3', 'opt4'))),
-      )],
+      'two full actions' => [[
+        'encoded' => 'action1|subaction1|opt1,opt2__action2|subaction2|opt3,opt4',
+        'actions' => [
+          new ActionLink (['action' => 'action1', 'subaction' => 'subaction1', 'options' => ['opt1', 'opt2']]),
+          new ActionLink (['action' => 'action2', 'subaction' => 'subaction2', 'options' => ['opt3', 'opt4']]),
+        ],
+      ]],
+    ];
+  }
+
+  /**
+   * @dataProvider alterActionLinkProvider
+   */
+  public function testAlterActionLink($data) {
+    // Test that altering from an ActionChain is the same as altering directly on the link.
+    $chain = new ActionChain (['actions' => [clone $data['link']]]);
+    $change = $data['change'];
+
+    // Test altering the defaulted currentAction().
+    $link = clone $data['link'];
+    $link->alter($change->subaction, $change->options);
+    $chain->alterActionLink($change->subaction, $change->options);
+    $this->assertEquals($chain->currentAction(), $link);
+
+    // Test passing the ActionLink manually to alterActionLink().
+    $chain = new ActionChain (['actions' => [clone $data['link']]]);
+    $chain->alterActionLink($change->subaction, $change->options, $chain->actions[0]);
+    $this->assertEquals($chain->actions[0], $link);
+
+    // Test altering with no options sent.
+    $link = clone $data['link'];
+    $link->alter($change->subaction);
+    $chain = new ActionChain (['actions' => [clone $data['link']]]);
+    $chain->alterActionLink($change->subaction);
+    $this->assertEquals($chain->currentAction(), $link);
+  }
+
+  public function alterActionLinkProvider() {
+    return [
+      'fill empty link' => [[
+        'link' => new ActionLink,
+        'change' => new ActionLink (['action' => 'action1', 'subaction' => 'subaction1', 'options' => ['opt1', 'opt2']]),
+      ]],
+      'empty full link' => [[
+        'link' => new ActionLink (['action' => 'action1', 'subaction' => 'subaction1', 'options' => ['opt1', 'opt2']]),
+        'change' => new ActionLink,
+      ]],
+      'swap links' => [[
+        'link' => new ActionLink (['action' => 'action1', 'subaction' => 'subaction1', 'options' => ['opt1', 'opt2']]),
+        'change' => new ActionLink (['action' => 'action2', 'subaction' => 'subaction2', 'options' => ['opt3', 'opt4']]),
+      ]],
+      'alter chain current link' => [[
+        'link' => new ActionLink (['action' => 'action1', 'subaction' => 'subaction1', 'options' => ['opt1', 'opt2']]),
+        'change' => new ActionLink (['action' => 'action2', 'subaction' => 'subaction2', 'options' => ['opt3', 'opt4']]),
+      ]]
     ];
   }
 }

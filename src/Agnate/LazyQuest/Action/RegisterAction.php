@@ -6,19 +6,26 @@ use \Agnate\LazyQuest\ActionData;
 use \Agnate\LazyQuest\ActionState;
 use \Agnate\LazyQuest\App;
 use \Agnate\LazyQuest\EntityBasic;
+use \Agnate\LazyQuest\Guild;
 use \Agnate\LazyQuest\Message;
 use \Agnate\LazyQuest\Message\Attachment;
 
 class RegisterAction extends EntityBasic implements ActionInterface {
 
-  const STEP_NAME = 'name';
-  const STEP_ICON = 'icon';
-  const STEP_CREATION = 'creation';
+  const STEP_ASK_NAME = 'ask-name';
+  const STEP_PROCESS_NAME = 'process-name';
+  const STEP_ASK_ICON = 'ask-icon';
+  const STEP_PROCESS_ICON = 'process-icon';
+  const STEP_APPROVAL = 'approval';
+  const STEP_CREATE = 'create';
 
   protected static $steps = array(
-    RegisterAction::STEP_NAME,
-    RegisterAction::STEP_ICON,
-    RegisterAction::STEP_CREATION,
+    RegisterAction::STEP_ASK_NAME,
+    RegisterAction::STEP_PROCESS_NAME,
+    RegisterAction::STEP_ASK_ICON,
+    RegisterAction::STEP_PROCESS_ICON,
+    RegisterAction::STEP_APPROVAL,
+    RegisterAction::STEP_CREATE,
   );
 
   public static function perform (ActionData $data, $state = NULL) {
@@ -34,8 +41,8 @@ class RegisterAction extends EntityBasic implements ActionInterface {
         'slack_id' => $data->user,
         'team_id' => $data->team()->tid,
         'timestamp' => $data->message_ts,
-        'action' => $data->action()->encoded(),
-        'extra' => array('step' => RegisterAction::STEP_NAME),
+        'action' => $data->actionChain()->encode(),
+        'extra' => array('step' => RegisterAction::STEP_ASK_NAME),
       ));
       $success = $state->save();
       if (empty($success)) {
@@ -70,24 +77,38 @@ class RegisterAction extends EntityBasic implements ActionInterface {
 
   protected static function performStep (ActionData $data, ActionState $state) {
     // Alter the ActionData to have all the timestamp information we need to override the old item.
-    $data->callback_id = 'FAKE';
-    $data->message_ts = $state->timestamp;
+    // $data->callback_id = 'FAKE';
+    // $data->message_ts = $state->timestamp;
 
     // Get the response for the appropriate step.
     switch ($state->extra['step']) {
       // Request Guild name.
-      case RegisterAction::STEP_NAME:
-        $response = static::performName($data, $state);
+      case RegisterAction::STEP_ASK_NAME:
+        $response = static::performAskName($data, $state);
         break;
+
+      // Process Guild name.
+      case RegisterAction::STEP_PROCESS_NAME:
+        static::performProcessName($data, $state);
+        // Continue to next switch case.
 
       // Request Guild icon.
-      case RegisterAction::STEP_ICON:
-        $response = static::performIcon($data, $state);
+      case RegisterAction::STEP_ASK_ICON:
+        $response = static::performAskIcon($data, $state);
         break;
 
-      // Show summary.
-      case RegisterAction::STEP_CREATION:
-        $response = static::performCreation($data, $state);
+      // Process Guild icon.
+      case RegisterAction::STEP_PROCESS_ICON:
+        static::performProcessIcon($data, $state);
+        // Continue to next switch case.
+
+      // Show summary and confirmation.
+      case RegisterAction::STEP_APPROVAL:
+        $response = static::performApproval($data, $state);
+        break;
+
+      case RegisterAction::STEP_CREATE:
+        $response = static::performCreate($data, $state);
         break;
     }
 
@@ -97,14 +118,20 @@ class RegisterAction extends EntityBasic implements ActionInterface {
   /**
    * Request the Guild name from the user.
    */
-  protected static function performName (ActionData $data, ActionState $state) {
-    // If the action chain exists in data, need to ask for name.
-    // print 'ActionData: ' . var_export($data, true) . "\n";
-    // print 'Action: ' . var_export($data->action(), true) . "\n";
-    if (!empty($data->action()) && $data->action()->currentActionName() == 'register') {
-      return Message::reply('Please tell me your Guild\'s name.', $data->channel, $data);
-    }
+  protected static function performAskName (ActionData $data, ActionState $state) {
+    // if (!empty($data->actionChain()) && $data->actionChain()->currentActionName() == 'register')
 
+    // Save that the next step is saving the Guild name.
+    $state->extra['step'] = RegisterAction::STEP_PROCESS_NAME;
+    $state->save();
+
+    return Message::reply('Please tell me your Guild\'s name.', $data->channel, $data);
+  }
+
+  /**
+   * Process the Guild name from the user.
+   */
+  protected static function performProcessName (ActionData $data, ActionState $state) {
     // They have submitted their Guild name.
     $name = $data->text;
     
@@ -112,18 +139,29 @@ class RegisterAction extends EntityBasic implements ActionInterface {
     $state->extra['name'] = $name;
     $state->extra['step'] = static::nextStep($state->extra['step']);
     $state->save();
-
-    // Wipe out the information that would cause a chat.update, as we need a new message made.
-    $data->callback_id = NULL;
-
-    // Perform the next step.
-    return Message::reply('Please tell me your Guild\'s icon.', $data->channel, $data);
   }
 
   /**
    * Request the Guild icon from the user.
    */
-  protected static function performIcon (ActionData $data, ActionState $state) {
+  protected static function performAskIcon (ActionData $data, ActionState $state) {
+    // TODO: Remove buttons from previous message. Use ActionState's timestamp.
+
+    // Save that the next step is saving the Guild name.
+    $state->timestamp = $data->message_ts;
+    $state->extra['step'] = RegisterAction::STEP_PROCESS_ICON;
+    $state->save();
+
+    // Wipe out the information that would cause a chat.update, as we need a new message made.
+    $data->callback_id = NULL;
+
+    return Message::reply('Please tell me your Guild\'s icon.', $data->channel, $data);
+  }
+
+  /**
+   * Process the Guild icon from the user.
+   */
+  protected static function performProcessIcon (ActionData $data, ActionState $state) {
     // They have submitted their Guild icon.
     $icon = $data->text;
     
@@ -131,27 +169,44 @@ class RegisterAction extends EntityBasic implements ActionInterface {
     $state->extra['icon'] = $icon;
     $state->extra['step'] = static::nextStep($state->extra['step']);
     $state->save();
+  }
+
+  /**
+   * Present user with an approval action.
+   */
+  protected static function performApproval (ActionData $data, ActionState $state) {
+    // TODO: Remove buttons from previous message. Use ActionState's timestamp.
+
+    // Save that the next step is saving the Guild name.
+    $state->timestamp = $data->message_ts;
+    $state->extra['step'] = static::nextStep($state->extra['step']);
+    $state->save();
 
     // Wipe out the information that would cause a chat.update, as we need a new message made.
     $data->callback_id = NULL;
 
     // Action chain.
-    $action = $state->action();
+    $confirm = clone ($state->actionChain());
+    $confirm->alterActionLink('confirm');
 
+    $cancel = clone ($state->actionChain());
+    $cancel->alterActionLink('cancel');
 
     // Perform the next step.
     $message = Message::reply("You have chosen:\n" . $state->extra['icon'] . ' ' . $state->extra['name'], $data->channel, $data);
-    $message->addAttachment(Attachment::approval($state->action()->encode(), 'confirm', 'cancel'));
+    $message->addAttachment(Attachment::approval($state->callbackID(), $confirm->encode(), $cancel->encode()));
     return $message;
   }
 
   /**
    * Create the Guild if confirmed.
    */
-  protected static function performCreation (ActionData $data, ActionState $state) {
-    // Check the ActionData action value to see which option was chosen.
+  protected static function performCreate (ActionData $data, ActionState $state) {
     $messages = array();
-    switch ($data->currentAction()) {
+    $chain = $data->actionChain();
+
+    // Check the ActionData action value to see which option was chosen.
+    switch ($chain->currentAction()->subaction) {
       case 'confirm':
         // Create the Guild.
         $guild = new Guild (array(
@@ -159,15 +214,15 @@ class RegisterAction extends EntityBasic implements ActionInterface {
           'name' => $state->extra['name'],
           'icon' => $state->extra['icon'],
           'slack_id' => $data->user,
-          'team_id' => $data->team,
+          'team_id' => $data->team()->tid,
         ));
         $success = $guild->save();
         if (empty($success)) {
           $messages[] = Message::error('There was an error saving your new Guild.', $data->channel, $data);
         }
         else {
-          $messages[] = Message::reply('You just registered ' . $guild->display() . '.', $data->channel, $data);
-          $messages[] = Message::globally($guild->display('U') . ' just registered a Guild called ' . $guild->display() . '!');
+          $messages[] = Message::reply('You just registered ' . $guild->display() . '.', $data->channel, $data, FALSE);
+          $messages[] = Message::globally($guild->display('U') . ' just registered a Guild named ' . $guild->display() . '!');
         }
         break;
     }
@@ -176,7 +231,7 @@ class RegisterAction extends EntityBasic implements ActionInterface {
     $state->delete();
     
     // All done.
-    return $message;
+    return $messages;
   }
 
 }
