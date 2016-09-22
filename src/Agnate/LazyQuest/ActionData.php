@@ -134,4 +134,12 @@ class ActionData extends EntityBasic {
     return $this->user . '__' . $this->team . (!empty($suffix) ? '__' . $suffix : '');
   }
 
+  /**
+   * Clear ActionData information so that it will send a new message instead of a chat.update.
+   * Currently this is done by clearing the $callback_id property.
+   */
+  public function clearForNewMessage () {
+    $this->callback_id = NULL;
+  }
+
 }

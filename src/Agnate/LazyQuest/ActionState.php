@@ -10,6 +10,7 @@ class ActionState extends Entity {
   public $slack_id;
   public $timestamp;
   public $action; // Contains ActionChain.
+  public $step;
   public $extra;
 
   protected $_action_chain;

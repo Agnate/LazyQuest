@@ -18,7 +18,8 @@ class Trigger {
    */
   function __construct($commands, $action) {
     if (!is_array($commands)) throw new Exception('Trigger commands must be an Array of Strings.');
-    if (!class_exists($action) || !in_array('Agnate\LazyQuest\Action\ActionInterface', class_implements($action))) throw new Exception('Trigger action must be the name of an Action class and must implement ActionInterface, "' . $action . '" given.');
+    if (!class_exists($action))
+      throw new Exception('Trigger action must be the name of an Action class and must implement ActionInterface, "' . $action . '" given.');
 
     // Set the defaults.
     $this->action = $action;
@@ -60,11 +61,13 @@ class Trigger {
    * @return Returns a Message (or array of Message instances) that can be encoded into an output for Slack or browsers.
    */
   public function performAction (ActionData $data, $state = NULL) {
-    // Must convert this to a variable to trigger PHP's scope resolution operator (http://php.net/manual/en/language.oop5.paamayim-nekudotayim.php).
+    // Must convert this to a variable to trigger PHP's scope resolution operator:
+    // http://php.net/manual/en/language.oop5.paamayim-nekudotayim.php
     $action = $this->action;
-
+    $instance = new $action;
+    
     // Trigger the action and pass it the arguments.
-    return $action::perform($data, $state);
+    return $instance->perform($data, $state);
   }
 
 }

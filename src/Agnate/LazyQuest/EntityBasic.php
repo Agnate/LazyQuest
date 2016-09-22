@@ -7,8 +7,8 @@ use \JsonSerializable;
 
 class EntityBasic implements JsonSerializable {
 
-  static $fields_int; // Array: any field keys set in this array will be automatically converted to an integer.
-  static $fields_array; // Array: any field keys set in this array will be automatically set as an empty array if no data is present. 
+  protected static $fields_int; // Array: any field keys set in this array will be automatically converted to an integer.
+  protected static $fields_array; // Array: any field keys set in this array will be automatically set as an empty array if no data is present. 
 
   /**
    * Construct the entity and set data inside.

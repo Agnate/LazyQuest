@@ -6,17 +6,25 @@ use Agnate\LazyQuest\ActionChain;
 use Agnate\LazyQuest\ActionData;
 use Agnate\LazyQuest\ActionLink;
 use Agnate\LazyQuest\ActionState;
-use Agnate\LazyQuest\EntityBasic;
-use Agnate\LazyQuest\Action\ActionInterface;
 use Agnate\LazyQuest\Message;
 use Agnate\LazyQuest\Message\Channel;
 use Agnate\LazyQuest\Message\Attachment;
 use Agnate\LazyQuest\Message\AttachmentButton;
 use Agnate\LazyQuest\Message\AttachmentButtonConfirm;
 
-class GreetingAction extends EntityBasic implements ActionInterface {
+class GreetingAction extends BaseAction {
 
-  public static function perform (ActionData $data, $state = NULL) {
+  public $name = 'greeting action';
+  public $steps = [];
+  
+
+  /**
+   * Perform this action based on Slack data and optionally an existing ActionState.
+   * @param $data ActionData instance containing a message typed by the Slack user.
+   * @param $state ActionState instance containing any previous action information.
+   * @return Array Returns an array of Message instances to dispatch. 
+   */
+  public function perform (ActionData $data, $state = NULL) {
     $button_groups = array();
     $link_hello = ActionLink::create('hello');
 

@@ -80,6 +80,7 @@ class Updater extends Entity {
 
     // Calculate version difference between this instance and version sent as parameter.
     $updates = $this->versionDiff($version, $force);
+    $this->output(var_export($updates, TRUE));
 
     // If the update-to version is not actually higher than current version, we're done.
     if (count($updates) <= 0) {
@@ -378,6 +379,8 @@ class Updater extends Entity {
     // If we're forcing the current version to re-run, add it now.
     if ($force_cur) {
       $update_name = '\Agnate\LazyQuest\Update\Update_' . implode('_', $upinfo);
+      $this->output($update_name);
+      $this->output(var_export(class_exists($update_name), TRUE));
       if (@class_exists($update_name)) {
         $versions[implode('.', $upinfo)] = $update_name;
       }

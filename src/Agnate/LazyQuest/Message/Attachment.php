@@ -192,8 +192,9 @@ class Attachment extends EntityBasic {
 
   /**
    * Create a Cancel button Attachment based on ActionData.
+   * @param $action_data ActionData instance.
    */
-  public static function cancelButton (ActionData $action_data) {
+  public static function cancelButton ($action_data) {
     if (empty($action_data)) return FALSE;
 
     $chain = $action_data->actionChain();

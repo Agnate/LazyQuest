@@ -2,15 +2,17 @@
 
 namespace Agnate\LazyQuest\Action;
 
-use \Agnate\LazyQuest\ActionData;
-use \Agnate\LazyQuest\ActionState;
-use \Agnate\LazyQuest\App;
-use \Agnate\LazyQuest\EntityBasic;
-use \Agnate\LazyQuest\Guild;
-use \Agnate\LazyQuest\Message;
-use \Agnate\LazyQuest\Message\Attachment;
+use Agnate\LazyQuest\ActionData;
+use Agnate\LazyQuest\ActionState;
+use Agnate\LazyQuest\App;
+use Agnate\LazyQuest\Guild;
+use Agnate\LazyQuest\Message;
+use Agnate\LazyQuest\Message\Attachment;
 
-class RegisterAction extends EntityBasic implements ActionInterface {
+class RegisterAction extends BaseAction {
+
+  public $name = 'registration process';
+  public $steps;
 
   const STEP_ASK_NAME = 'ask-name';
   const STEP_PROCESS_NAME = 'process-name';
@@ -19,111 +21,70 @@ class RegisterAction extends EntityBasic implements ActionInterface {
   const STEP_APPROVAL = 'approval';
   const STEP_CREATE = 'create';
 
-  protected static $steps = array(
-    RegisterAction::STEP_ASK_NAME,
-    RegisterAction::STEP_PROCESS_NAME,
-    RegisterAction::STEP_ASK_ICON,
-    RegisterAction::STEP_PROCESS_ICON,
-    RegisterAction::STEP_APPROVAL,
-    RegisterAction::STEP_CREATE,
-  );
+  /**
+   * Construct the entity and set data inside.
+   * @param $data Array of keyed values that are dynamically saved to the Entity if declared in the class.
+   */
+  function __construct ($data = array()) {
+    $this->steps = [
+      new Step ([
+        'name' => static::STEP_ASK_NAME,
+        'function' => 'performAskName',
+        'type' => Step::TYPE_ASK,
+      ]),
+      new Step ([
+        'name' => static::STEP_PROCESS_NAME,
+        'function' => 'performProcessName',
+        'type' => Step::TYPE_PROCESS,
+      ]),
+      new Step ([
+        'name' => static::STEP_ASK_ICON,
+        'function' => 'performAskIcon',
+        'type' => Step::TYPE_ASK,
+      ]),
+      new Step ([
+        'name' => static::STEP_PROCESS_ICON,
+        'function' => 'performProcessIcon',
+        'type' => Step::TYPE_PROCESS,
+      ]),
+      new Step ([
+        'name' => static::STEP_APPROVAL,
+        'function' => 'performApproval',
+        'type' => Step::TYPE_APPROVAL,
+      ]),
+      new Step ([
+        'name' => static::STEP_CREATE,
+        'function' => 'performCreate',
+        'type' => Step::TYPE_PROCESS,
+      ]),
+    ];
 
-  public static function perform (ActionData $data, $state = NULL) {
+    // Assign data to instance properties.
+    parent::__construct($data);
+  }
 
+  /**
+   * Perform this action based on Slack data and optionally an existing ActionState.
+   * @param $data ActionData instance containing a message typed by the Slack user.
+   * @param $state ActionState instance containing any previous action information.
+   * @return Array Returns an array of Message instances to dispatch. 
+   */
+  public function perform (ActionData $data, $state = NULL) {
     // If they already have a registered Guild, we're done.
     if (!empty($data->guild())) {
       return Message::reply('You have already registered this season as: '. $data->guild()->display(FALSE) .'.', $data->channel, $data);
     }
 
-    // New ActionState should only be created when the registration process first starts.
-    if (empty($state)) {
-      $state = new ActionState (array(
-        'slack_id' => $data->user,
-        'team_id' => $data->team()->tid,
-        'timestamp' => $data->message_ts,
-        'action' => $data->actionChain()->encode(),
-        'extra' => array('step' => RegisterAction::STEP_ASK_NAME),
-      ));
-      $success = $state->save();
-      if (empty($success)) {
-        return array(Message::error('There was a problem saving registration action state.', $data->channel, $data));
-      }
-    }
-
-    // Perform the next step.
-    $response = static::performStep($data, $state);
-
-    // If there was no response, there's an error.
-    if (empty($response)) {
-      $response = Message::error('There was a problem with the registration process.', $data->channel, $data);
-    }
-    
-    // Convert to array and send out response.
-    if (!is_array($response)) $response = array($response);
-    return $response;
-  }
-
-  /**
-   * Get the next step in the action.
-   */
-  protected static function nextStep ($current_step) {
-    $key = array_search($current_step, static::$steps);
-    if ($key !== FALSE && count(static::$steps) > $key + 1) {
-      return static::$steps[$key + 1];
-    }
-
-    return FALSE;
-  }
-
-  protected static function performStep (ActionData $data, ActionState $state) {
-    // Alter the ActionData to have all the timestamp information we need to override the old item.
-    // $data->callback_id = 'FAKE';
-    // $data->message_ts = $state->timestamp;
-
-    // Get the response for the appropriate step.
-    switch ($state->extra['step']) {
-      // Request Guild name.
-      case RegisterAction::STEP_ASK_NAME:
-        $response = static::performAskName($data, $state);
-        break;
-
-      // Process Guild name.
-      case RegisterAction::STEP_PROCESS_NAME:
-        static::performProcessName($data, $state);
-        // Continue to next switch case.
-
-      // Request Guild icon.
-      case RegisterAction::STEP_ASK_ICON:
-        $response = static::performAskIcon($data, $state);
-        break;
-
-      // Process Guild icon.
-      case RegisterAction::STEP_PROCESS_ICON:
-        static::performProcessIcon($data, $state);
-        // Continue to next switch case.
-
-      // Show summary and confirmation.
-      case RegisterAction::STEP_APPROVAL:
-        $response = static::performApproval($data, $state);
-        break;
-
-      case RegisterAction::STEP_CREATE:
-        $response = static::performCreate($data, $state);
-        break;
-    }
-
-    return $response;
+    // Perform the action steps.
+    return parent::perform($data, $state);
   }
 
   /**
    * Request the Guild name from the user.
    */
-  protected static function performAskName (ActionData $data, ActionState $state) {
-    // if (!empty($data->actionChain()) && $data->actionChain()->currentActionName() == 'register')
-
-    // Save that the next step is saving the Guild name.
-    $state->extra['step'] = RegisterAction::STEP_PROCESS_NAME;
-    $state->save();
+  protected function performAskName (ActionData $data, ActionState $state) {
+    // Set ActionState to the next step.
+    $this->gotoNextStep($data, $state);
 
     return Message::reply('Please tell me your Guild\'s name.', $data->channel, $data);
   }
@@ -131,29 +92,29 @@ class RegisterAction extends EntityBasic implements ActionInterface {
   /**
    * Process the Guild name from the user.
    */
-  protected static function performProcessName (ActionData $data, ActionState $state) {
+  protected function performProcessName (ActionData $data, ActionState $state) {
     // They have submitted their Guild name.
     $name = $data->text;
     
     // TO DO: Validate the name.
+
     $state->extra['name'] = $name;
-    $state->extra['step'] = static::nextStep($state->extra['step']);
-    $state->save();
+
+    // Set ActionState to the next step.
+    $this->gotoNextStep($data, $state);
   }
 
   /**
    * Request the Guild icon from the user.
    */
-  protected static function performAskIcon (ActionData $data, ActionState $state) {
+  protected function performAskIcon (ActionData $data, ActionState $state) {
     // TODO: Remove buttons from previous message. Use ActionState's timestamp.
 
-    // Save that the next step is saving the Guild name.
-    $state->timestamp = $data->message_ts;
-    $state->extra['step'] = RegisterAction::STEP_PROCESS_ICON;
-    $state->save();
+    // Set ActionState to the next step.
+    $this->gotoNextStep($data, $state);
 
-    // Wipe out the information that would cause a chat.update, as we need a new message made.
-    $data->callback_id = NULL;
+    // Send as a new chat instead of updating the current one.
+    $data->clearForNewMessage();
 
     return Message::reply('Please tell me your Guild\'s icon.', $data->channel, $data);
   }
@@ -161,76 +122,61 @@ class RegisterAction extends EntityBasic implements ActionInterface {
   /**
    * Process the Guild icon from the user.
    */
-  protected static function performProcessIcon (ActionData $data, ActionState $state) {
+  protected function performProcessIcon (ActionData $data, ActionState $state) {
     // They have submitted their Guild icon.
     $icon = $data->text;
     
     // TO DO: Validate the icon.
+
     $state->extra['icon'] = $icon;
-    $state->extra['step'] = static::nextStep($state->extra['step']);
-    $state->save();
+    
+    // Set ActionState to the next step.
+    $this->gotoNextStep($data, $state);
   }
 
   /**
    * Present user with an approval action.
    */
-  protected static function performApproval (ActionData $data, ActionState $state) {
+  protected function performApproval (ActionData $data, ActionState $state) {
     // TODO: Remove buttons from previous message. Use ActionState's timestamp.
 
-    // Save that the next step is saving the Guild name.
-    $state->timestamp = $data->message_ts;
-    $state->extra['step'] = static::nextStep($state->extra['step']);
-    $state->save();
+    // Set ActionState to the next step.
+    $this->gotoNextStep($data, $state);
 
-    // Wipe out the information that would cause a chat.update, as we need a new message made.
-    $data->callback_id = NULL;
+    // Send as a new chat instead of updating the current one.
+    $data->clearForNewMessage();
 
-    // Action chain.
-    $confirm = clone ($state->actionChain());
-    $confirm->alterActionLink('confirm');
-
-    $cancel = clone ($state->actionChain());
-    $cancel->alterActionLink('cancel');
-
-    // Perform the next step.
-    $message = Message::reply("You have chosen:\n" . $state->extra['icon'] . ' ' . $state->extra['name'], $data->channel, $data);
-    $message->addAttachment(Attachment::approval($state->callbackID(), $confirm->encode(), $cancel->encode()));
-    return $message;
+    $text = "You have chosen:\n" . $state->extra['icon'] . ' ' . $state->extra['name'];
+    return $this->getApprovalMessage($text, $data, $state);
   }
 
   /**
    * Create the Guild if confirmed.
    */
-  protected static function performCreate (ActionData $data, ActionState $state) {
+  protected function performCreate (ActionData $data, ActionState $state) {
     $messages = array();
     $chain = $data->actionChain();
 
     // Check the ActionData action value to see which option was chosen.
-    switch ($chain->currentAction()->subaction) {
-      case 'confirm':
-        // Create the Guild.
-        $guild = new Guild (array(
-          'username' => $data->user_info['name'],
-          'name' => $state->extra['name'],
-          'icon' => $state->extra['icon'],
-          'slack_id' => $data->user,
-          'team_id' => $data->team()->tid,
-        ));
-        $success = $guild->save();
-        if (empty($success)) {
-          $messages[] = Message::error('There was an error saving your new Guild.', $data->channel, $data);
-        }
-        else {
-          $messages[] = Message::reply('You just registered ' . $guild->display() . '.', $data->channel, $data, FALSE);
-          $messages[] = Message::globally($guild->display('U') . ' just registered a Guild named ' . $guild->display() . '!');
-        }
-        break;
+    if ($chain->currentAction()->subaction == 'confirm') {
+      // Create the Guild.
+      $guild = new Guild ([
+        'username' => $data->user_info['name'],
+        'name' => $state->extra['name'],
+        'icon' => $state->extra['icon'],
+        'slack_id' => $data->user,
+        'team_id' => $data->team()->tid,
+      ]);
+      $success = $guild->save();
+      if (empty($success)) {
+        $messages[] = Message::error('There was an error saving your new Guild.', $data->channel, $data);
+      }
+      else {
+        $messages[] = Message::reply('You just registered ' . $guild->display() . '.', $data->channel, $data, FALSE);
+        $messages[] = Message::globally($guild->display('U') . ' just registered a Guild named ' . $guild->display() . '!');
+      }
     }
 
-    // Delete the ActionState.
-    $state->delete();
-    
-    // All done.
     return $messages;
   }
 

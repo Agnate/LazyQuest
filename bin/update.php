@@ -15,7 +15,8 @@
 
 require_once('bootstrap.php');
 
-use \Agnate\LazyQuest\Updater;
+use Agnate\LazyQuest\Updater;
+
 
 // Get the parameters passed in from the PHP command line.
 $shortopts = 'v:'; // Required

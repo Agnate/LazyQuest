@@ -20,8 +20,11 @@ class Session {
     App::start();
 
     // Register all the triggers.
-    $this->triggers['hi'] = new Trigger (array('hi', 'hello', 'hey', 'yo', 'sup', 'howdy', 'hai', 'hay', 'greetings', 'greeting'), '\Agnate\LazyQuest\Action\GreetingAction');
-    $this->triggers['register'] = new Trigger (array('register'), '\Agnate\LazyQuest\Action\RegisterAction');
+    $this->triggers['hi'] = new Trigger (
+      ['hi', 'hello', 'hey', 'yo', 'sup', 'howdy', 'hai', 'hay', 'greetings', 'greeting', 'allo', 'salut', 'bonjour', 'konnichiwa', 'ni hao'],
+      '\Agnate\LazyQuest\Action\GreetingAction'
+    );
+    $this->triggers['register'] = new Trigger (['register'], '\Agnate\LazyQuest\Action\RegisterAction');
   }
 
   /**
@@ -117,9 +120,9 @@ class Session {
     $chain = $this->data->actionChain();
     $action = $chain->currentActionName();
 
-    App::logger()->notice('Action: ' . var_export($action, true));
-    App::logger()->notice('Data: ' . var_export($this->data, true));
-    App::logger()->notice('State: ' . var_export($this->state, true));
+    // App::logger()->notice('Action: ' . var_export($action, true));
+    // App::logger()->notice('Data: ' . var_export($this->data, true));
+    // App::logger()->notice('State: ' . var_export($this->state, true));
 
     // Check all of the triggers to see if there are any Actions to run.
     if ($action) {
