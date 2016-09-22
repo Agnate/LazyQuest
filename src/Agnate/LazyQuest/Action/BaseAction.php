@@ -40,7 +40,11 @@ class BaseAction extends EntityBasic {
       }
     }
 
-    App::logger()->notice('Step: ' . var_export($state->step, true));
+    // Reconstitute the ActionData with the action for instances where we sent a new Slack message
+    // instead of updating the existing one (typically happens when text input is required).
+    $data->reconstitute($state);
+
+    // App::logger()->notice('Step: ' . var_export($state->step, true));
 
     // Perform the next step(s).
     $response = $this->performSteps($data, $state);
@@ -183,7 +187,7 @@ class BaseAction extends EntityBasic {
     $cancel->alterActionLink('cancel');
 
     // Perform the next step.
-    $message = Message::reply($text, $data->channel, $data);
+    $message = Message::reply($text, $data->channel, $data, FALSE);
     $message->addAttachment(Attachment::approval($state->callbackID(), $confirm->encode(), $cancel->encode()));
     return $message;
   }

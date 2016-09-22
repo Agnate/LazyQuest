@@ -142,4 +142,15 @@ class ActionData extends EntityBasic {
     $this->callback_id = NULL;
   }
 
+  /**
+   * Reconstitute the ActionData with the action for instances where we sent a new Slack message
+   * instead of updating the existing one (typically happens when text input is required).
+   */
+  public function reconstitute(ActionState $state) {
+    // Populate the action from the ActionState.
+    if (empty($this->actions) && !empty($state->action)) {
+      $this->actions[0]['name'] = $state->action;
+    }
+  }
+
 }

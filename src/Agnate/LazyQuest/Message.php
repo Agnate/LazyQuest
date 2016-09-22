@@ -127,7 +127,7 @@ class Message extends EntityBasic {
    * @return Constant Returns the Channel type to use. Usually will be either Channel::TYPE_REPLY or Channel::TYPE_UPDATE.
    */
   public static function channelType ($action_data) {
-    return (!empty($action_data) && !empty($action_data->callback_id) && !empty($action_data->message_ts)) ? Channel::TYPE_UPDATE : Channel::TYPE_REPLY;
+    return (!empty($action_data) && !empty($action_data->message_ts)) ? Channel::TYPE_UPDATE : Channel::TYPE_REPLY;
   }
 
   /**
