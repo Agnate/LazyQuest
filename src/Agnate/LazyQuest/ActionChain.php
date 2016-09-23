@@ -101,6 +101,22 @@ class ActionChain extends EntityBasic {
     return $chain;
   }
 
+  /**
+   * Add an action to the list of actions.
+   * @param String/ActionLink $action Provide either a string (to be decoded) or an ActionLink.
+   */
+  public function addAction ($action) {
+    if (is_string($action)) {
+      $action = ActionLink::create($action);
+    }
+
+    if (!($action instanceof ActionLink)) return FALSE;
+
+    $this->actions[] = $action;
+    
+    return TRUE;
+  }
+
   /* =================================
      ______________  ________________
     / ___/_  __/   |/_  __/  _/ ____/

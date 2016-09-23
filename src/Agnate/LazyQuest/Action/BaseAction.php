@@ -183,12 +183,13 @@ class BaseAction extends EntityBasic {
     $confirm = clone ($state->actionChain());
     $confirm->alterActionLink('confirm');
 
-    $cancel = clone ($state->actionChain());
+    // Cancel will go back to the previous step.
+    $cancel = $state->actionChain()->goBack();
     $cancel->alterActionLink('cancel');
 
     // Perform the next step.
     $message = Message::reply($text, $data->channel, $data, FALSE);
-    $message->addAttachment(Attachment::approval($state->callbackID(), $confirm->encode(), $cancel->encode()));
+    $message->addAttachment(Attachment::approval($state->callbackID('approval'), $confirm->encode(), $cancel->encode()));
     return $message;
   }
 }

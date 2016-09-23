@@ -114,7 +114,7 @@ class Session {
     ));
 
     // If the data is a Cancel button, delete the ActionState.
-    if ($this->data->callback_id == $this->data->callbackID('cancel')) {
+    if ($this->isCancelAction($this->data, $this->state)) {
       $this->state->delete();
       $this->state = NULL;
     }
@@ -148,6 +148,31 @@ class Session {
     // Convert to array to simplify output handling.
     if (!is_array($response)) $response = array($response);
     return $response;
+  }
+
+  /**
+   * Check if the action is a Cancel action.
+   * @return Boolean Returns TRUE if action is a Cancel action, FALSE otherwise.
+   */
+  protected function isCancelAction (ActionData $data, ActionState $state) {
+    if (empty($data)) return FALSE;
+
+    // Message cancel buttons will yield this result.
+    if ($data->callback_id == $data->callbackID('cancel')) return TRUE;
+
+    if (empty($state)) return FALSE;
+    if (empty($data->callback_id)) return FALSE;
+
+    $chain = $data->actionChain();
+    if (empty($chain)) return FALSE;
+
+    $action = $chain->currentAction();
+    if (empty($action)) return FALSE;
+
+    // BaseAction approval Messages will yield this result.
+    if ($data->callback_id == $state->callbackID('approval') && $action->subaction == 'cancel') return TRUE;
+
+    return FALSE;
   }
 
 }

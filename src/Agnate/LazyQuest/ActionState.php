@@ -71,7 +71,7 @@ class ActionState extends Entity {
    * @return String Returns a callbackID unique to the Slack user.
    */
   public function callbackID ($suffix = NULL) {
-    return $this->slack_id . '__' . $this->getRelationship('team_id')->team_id . '__' . $this->timestamp . (!empty($suffix) ? '__' . $suffix : '');
+    return $this->slack_id . '__' . $this->getRelationship('team_id')->team_id . (!empty($suffix) ? '__' . $suffix : '');
   }
 
 
