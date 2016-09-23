@@ -44,6 +44,10 @@ class Server {
    * Start all the server connections to Slack.
    */
   public function start () {
+    // Wipe out all ActionStates and Log entries in the database.
+    $this->clearLogs();
+
+    // Load all of the Team instances from the database.
     $this->teams = Team::loadMultiple(array());
 
     // Create a commander for each team.
@@ -154,5 +158,18 @@ class Server {
 
     // Intercept all exceptions.
     \Zend\Log\Logger::registerErrorHandler($this->logger);
+  }
+
+  /**
+   * Clear all log entries in the database.
+   */
+  protected function clearLogs () {
+    // Empty the logger database table.
+    $query = App::query("TRUNCATE TABLE " . static::$logger_table);
+    $query->execute();
+
+    // Empty the ActionState database table.
+    $query = App::query("TRUNCATE TABLE " . ActionState::$db_table);
+    $query->execute();
   }
 }

@@ -65,7 +65,7 @@ class GreetingAction extends BaseAction {
       ];
 
       $button_groups[] = [
-        'title' => 'Adventurers, recruiting, inventory and items',
+        'title' => 'Adventurers, recruiting, inventory, and items',
         'text' => 'View adventurers and inventory, trade consumables and relics, and recruit new adventurers',
         'buttons' => [
           ['text' => 'Adventurers', 'value' => new ActionChain (
