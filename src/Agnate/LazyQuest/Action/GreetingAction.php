@@ -58,23 +58,29 @@ class GreetingAction extends BaseAction {
           ['text' => 'Raid', 'value' => new ActionChain (
             ['actions' => [$link_hello, ActionLink::create('raid')]]
           )],
+          ['text' => 'Colosseum', 'value' => new ActionChain (
+            ['actions' => [$link_hello, ActionLink::create('colosseum')]]
+          )],
         ],
       ];
 
       $button_groups[] = [
-        'title' => 'Inventory and items',
-        'text' => 'View and trade consumables and relics',
+        'title' => 'Adventurers, recruiting, inventory and items',
+        'text' => 'View adventurers and inventory, trade consumables and relics, and recruit new adventurers',
         'buttons' => [
+          ['text' => 'Adventurers', 'value' => new ActionChain (
+            ['actions' => [$link_hello, ActionLink::create('adventurers')]]
+          )],
+          ['text' => 'Recruit', 'value' => new ActionChain (
+            ['actions' => [$link_hello, ActionLink::create('recruit')]]
+          )],
           ['text' => 'Inventory', 'value' => new ActionChain (
             ['actions' => [$link_hello, ActionLink::create('inventory')]]
           )],
           ['text' => 'Buy', 'value' => new ActionChain (
             ['actions' => [$link_hello, ActionLink::create('buy')]]
           )],
-          ['text' => 'Sell', 'value' => new ActionChain (
-            ['actions' => [$link_hello, ActionLink::create('sell')]]
-          )],
-          ['text' => 'Give', 'value' => new ActionChain (
+          ['text' => 'Trades', 'value' => new ActionChain (
             ['actions' => [$link_hello, ActionLink::create('give')]]
           )],
         ],
@@ -100,32 +106,32 @@ class GreetingAction extends BaseAction {
         ],
       ];
 
-      $button_groups[] = [
-        'title' => 'Adventurers',
-        'text' => 'View, promote, empower, equip, dismiss, and recruit adventurers',
-        'buttons' => [
-          ['text' => 'View', 'value' => new ActionChain (
-            ['actions' => [$link_hello, ActionLink::create('adventurers')]]
-          )],
-          ['text' => 'Recruit', 'value' => new ActionChain (
-            ['actions' => [$link_hello, ActionLink::create('recruit')]]
-          )],
-        ],
-      ];
+      // $button_groups[] = [
+      //   'title' => 'Adventurers',
+      //   'text' => 'View, promote, empower, equip, dismiss, and recruit adventurers',
+      //   'buttons' => [
+      //     ['text' => 'View', 'value' => new ActionChain (
+      //       ['actions' => [$link_hello, ActionLink::create('adventurers')]]
+      //     )],
+      //     ['text' => 'Recruit', 'value' => new ActionChain (
+      //       ['actions' => [$link_hello, ActionLink::create('recruit')]]
+      //     )],
+      //   ],
+      // ];
       // Per-adventurer actions: promote, empower, equip, dismiss
 
-      $button_groups[] = [
-        'title' => 'Colosseum',
-        'text' => 'See and challenge other guilds in the Colosseum for fame and fortune',
-        'buttons' => [
-          ['text' => 'Requests', 'value' => new ActionChain (
-            ['actions' => [$link_hello, ActionLink::create('requests')]]
-          )],
-          ['text' => 'Challenge', 'value' => new ActionChain (
-            ['actions' => [$link_hello, ActionLink::create('challenge')]]
-          )],
-        ],
-      ];
+      // $button_groups[] = [
+      //   'title' => 'Colosseum',
+      //   'text' => 'See and challenge other guilds in the Colosseum for fame and fortune',
+      //   'buttons' => [
+      //     ['text' => 'Requests', 'value' => new ActionChain (
+      //       ['actions' => [$link_hello, ActionLink::create('requests')]]
+      //     )],
+      //     ['text' => 'Challenge', 'value' => new ActionChain (
+      //       ['actions' => [$link_hello, ActionLink::create('challenge')]]
+      //     )],
+      //   ],
+      // ];
     }
 
     // Turn button groups into Attachments.

@@ -29,7 +29,7 @@ class Session {
 
   /**
    * @return Array of Message instances.
-   * @param $data Array of all of the data passed by Slack. Expected:
+   * @param Array $data List of all of the data passed by Slack. Expected:
    *   array(
    *     'type' => 'message',
    *     'channel' => 'D99999AR',
@@ -113,6 +113,12 @@ class Session {
       // 'timestamp' => $this->data->message_ts,
     ));
 
+    // If the data is a Cancel button, delete the ActionState.
+    if ($this->data->callback_id == $this->data->callbackID('cancel')) {
+      $this->state->delete();
+      $this->state = NULL;
+    }
+
     // Make sure there is a Season running.
     if (empty($this->data->season())) return array(Message::noSeason('', $this->data->channel, $this->data));
 
@@ -120,7 +126,7 @@ class Session {
     $chain = $this->data->actionChain();
     $action = $chain->currentActionName();
 
-    // App::logger()->notice('Action: ' . var_export($action, true));
+    // App::logger()->notice('Action: ' . var_export($chain, true));
     // App::logger()->notice('Data: ' . var_export($this->data, true));
     // App::logger()->notice('State: ' . var_export($this->state, true));
 
