@@ -39,7 +39,7 @@ class Database {
   public function connect() {
     // If we don't have a connection yet, connect to database.
     if (empty($this->connection)) {
-      $this->connection = new PDO ("mysql:host=" . $this->host . ";dbname=" . $this->name, $this->user, $this->password, array(PDO::ATTR_PERSISTENT => TRUE));
+      $this->connection = new PDO ("mysql:host=" . $this->host . ";dbname=" . $this->name . ";charset=utf8", $this->user, $this->password, array(PDO::ATTR_PERSISTENT => TRUE));
     }
 
     return $this->connection;

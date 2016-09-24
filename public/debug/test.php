@@ -2,6 +2,15 @@
 
 require_once('../../bootstrap.php');
 
+// use Agnate\LazyQuest\Team;
+
+// $team = new Team (array(
+//   'team_id' => 'T9999999',
+//   'team_name' => 'Fenix ᕕ( ᐛ )ᕗ',
+//   'bot_user_id' => 'U999999',
+//   'bot_access_token' => 'xxxxxxxx',
+// ));
+// $team->save();
 
 
 // print Agnate\LazyQuest\Action\RegisterAction::nextStep('name');
