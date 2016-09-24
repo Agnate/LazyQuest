@@ -13,6 +13,7 @@ class RegisterAction extends BaseAction {
 
   public $name = 'registration process';
   public $steps;
+  public $example_guild;
 
   const STEP_ASK_NAME = 'ask-name';
   const STEP_PROCESS_NAME = 'process-name';
@@ -59,6 +60,11 @@ class RegisterAction extends BaseAction {
       ]),
     ];
 
+    $this->example_guild = new Guild (array(
+      'name' => 'Death\'s Rattle',
+      'icon' => ':skull:',
+    ));
+
     // Assign data to instance properties.
     parent::__construct($data);
   }
@@ -82,21 +88,38 @@ class RegisterAction extends BaseAction {
   /**
    * Request the Guild name from the user.
    */
-  protected function performAskName (ActionData $data, ActionState $state) {
+  protected function performAskName (Step $step, ActionData $data, ActionState $state) {
     // Set ActionState to the next step.
     $this->gotoNextStep($data, $state);
 
-    return Message::reply('Please tell me your Guild\'s name.', $data->channel, $data);
+    $text[] = "Registering a Guild involves two parts:";
+    $text[] = "*Guild name:* This is the name of your Guild (example: `" . $this->example_guild->display('N') . "`).";
+    $text[] = "*Guild icon:* This is the emoji icon of your Guild (example: `" . $this->example_guild->display('I') . "`).";
+    $text[] = "Your Guild's name will be shown to other players as the icon and name chosen.";
+    $text[] = "Example: " . $this->example_guild->display();
+    $text[] = "";
+    $text[] = "*Guild name:*";
+    $text[] = "So, what's your Guild's name?";
+
+    return Message::reply($text, $data->channel, $data);
   }
 
   /**
    * Process the Guild name from the user.
    */
-  protected function performProcessName (ActionData $data, ActionState $state) {
+  protected function performProcessName (Step $step, ActionData $data, ActionState $state) {
     // They have submitted their Guild name.
     $name = $data->text;
     
-    // TO DO: Validate the name.
+    // Validate the name.
+    if (!Guild::validName($name)) {
+      // Force the step to repeat since this had an error.
+      $step->wait = TRUE;
+
+      // Give an error message back to the user.
+      $text[] = "The name you use cannot be longer than 255 characters. Please choose a shorter name.";
+      return Message::reply($text, $data->channel, $data);
+    }
 
     $state->extra['name'] = $name;
 
@@ -107,7 +130,7 @@ class RegisterAction extends BaseAction {
   /**
    * Request the Guild icon from the user.
    */
-  protected function performAskIcon (ActionData $data, ActionState $state) {
+  protected function performAskIcon (Step $step, ActionData $data, ActionState $state) {
     // TODO: Remove buttons from previous message. Use ActionState's timestamp.
 
     // Set ActionState to the next step.
@@ -116,17 +139,28 @@ class RegisterAction extends BaseAction {
     // Send as a new chat instead of updating the current one.
     $data->clearForNewMessage();
 
-    return Message::reply('Please tell me your Guild\'s icon.', $data->channel, $data);
+    $text[] = "*Guild icon:*";
+    $text[] = "What will your Guild's icon be? Make sure you use an emoji!";
+
+    return Message::reply($text, $data->channel, $data);
   }
 
   /**
    * Process the Guild icon from the user.
    */
-  protected function performProcessIcon (ActionData $data, ActionState $state) {
+  protected function performProcessIcon (Step $step, ActionData $data, ActionState $state) {
     // They have submitted their Guild icon.
     $icon = $data->text;
     
-    // TO DO: Validate the icon.
+    // Validate the icon.
+    if (!Guild::validIcon($icon)) {
+      // Force the step to repeat since this had an error.
+      $step->wait = TRUE;
+
+      // Give an error message back to the user.
+      $text[] = "The icon you use must be an emoji (example: `" . $this->example_guild->display('I') . "`).";
+      return Message::reply($text, $data->channel, $data);
+    }
 
     $state->extra['icon'] = $icon;
     
@@ -137,7 +171,7 @@ class RegisterAction extends BaseAction {
   /**
    * Present user with an approval action.
    */
-  protected function performApproval (ActionData $data, ActionState $state) {
+  protected function performApproval (Step $step, ActionData $data, ActionState $state) {
     // TODO: Remove buttons from previous message. Use ActionState's timestamp.
 
     // Set ActionState to the next step.
@@ -153,7 +187,7 @@ class RegisterAction extends BaseAction {
   /**
    * Create the Guild if confirmed.
    */
-  protected function performCreate (ActionData $data, ActionState $state) {
+  protected function performCreate (Step $step, ActionData $data, ActionState $state) {
     $messages = array();
     $chain = $data->actionChain();
 

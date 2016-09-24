@@ -89,7 +89,7 @@ class BaseAction extends EntityBasic {
       }
 
       // Call the function linked to the step and join the responses with current response.
-      $response = call_user_func([$this, $step->function], $data, $state);
+      $response = call_user_func([$this, $step->function], $step, $data, $state);
 
       // Figure out how to manage the response.
       if (is_array($response) && !empty($response)) {
@@ -173,9 +173,9 @@ class BaseAction extends EntityBasic {
 
   /**
    * Get a standard approval Message instance.
-   * @param $text The text string to show in the message.
-   * @param $data ActionData instance containing a message typed by the Slack user.
-   * @param $state ActionState instance containing any previous action information.
+   * @param string|Array $text The text string to show in the message.
+   * @param ActionData $data ActionData instance containing a message typed by the Slack user.
+   * @param ActionState $state ActionState instance containing any previous action information.
    * @return Message Returns the Message instance with appropriate attachment(s).
    */
   public function getApprovalMessage ($text, ActionData $data, ActionState $state) {

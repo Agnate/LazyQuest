@@ -9,6 +9,7 @@ class Step extends EntityBasic {
   public $name;
   public $type;
   public $function;
+  public $wait;
 
   const TYPE_ASK = 'ask';
   const TYPE_PROCESS = 'process';
@@ -45,7 +46,7 @@ class Step extends EntityBasic {
    *   This can be either text input or a button action.
    */
   public function waitForInput () {
-    return in_array($this->type, static::$waits_for_input);
+    return $this->wait || in_array($this->type, static::$waits_for_input);
   }
 
 }

@@ -62,4 +62,33 @@ class Guild extends Entity {
     return '@' . $name;
   }
 
+
+  /* =================================
+     ______________  ________________
+    / ___/_  __/   |/_  __/  _/ ____/
+    \__ \ / / / /| | / /  / // /
+   ___/ // / / ___ |/ / _/ // /___
+  /____//_/ /_/  |_/_/ /___/\____/
+
+  ==================================== */
+
+  /**
+   * Determine if this is a valid name or not.
+   * @param string $name The name (typically sent by the Slack user) to be validated.
+   * @return Boolean Returns TRUE if the name is valid, FALSE otherwise.
+   */
+  public static function validName ($name) {
+    return (strlen($name) < 255);
+  }
+
+  /**
+   * Determine if this is a valid icon or not.
+   * @param string $icon The icon (typically sent by the Slack user) to be validated.
+   * @return Boolean Returns TRUE if the icon is valid, FALSE otherwise.
+   */
+  public static function validIcon ($icon) {
+    // Starts and ends with a colon.
+    return (strlen($icon) < 255 && strpos($icon, ':') === 0 && strrpos($icon, ':') === strlen($icon) - 1);
+  }
+
 }

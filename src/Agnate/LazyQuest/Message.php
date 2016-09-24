@@ -139,6 +139,9 @@ class Message extends EntityBasic {
    * @return Message Returns an instance of Message.
    */
   public static function reply ($text, $channel_id, $action_data = NULL, $cancel = TRUE, $clear_attachments = TRUE) {
+    // If text is an array, implode it into a string.
+    if (is_array($text)) $text = implode("\n", $text);
+
     // Determine the channel type.
     $channel_type = static::channelType($action_data);
 
@@ -192,6 +195,9 @@ class Message extends EntityBasic {
    * @return Message Returns an instance of Message.
    */
   public static function globally ($text) {
+    // If text is an array, implode it into a string.
+    if (is_array($text)) $text = implode("\n", $text);
+    
     return new Message (array(
       'channel' => new Channel (Channel::TYPE_PUBLIC),
       'text' => $text,
