@@ -54,6 +54,7 @@ class Session {
       'team_id' => $this->data->team()->tid,
       'slack_id' => $this->data->user,
     ));
+
     if (!empty($this->state)) {
       $chain = $this->state->actionChain();
       $action = $chain->currentActionName();
@@ -69,7 +70,7 @@ class Session {
         }
       }
 
-      // If there's no response, check the text against the 
+      // If there's no response, check the text against the regular triggers.
       if (empty($response)) {
         // Delete the ActionState, invalidate the old action message, and test it as a regular command.
         $message_clear = Message::reply("This message is now out of date.", $this->data->channel, $this->data);
@@ -77,14 +78,17 @@ class Session {
       }
     }
 
-    $action = $this->data->text;
+    // If we didn't get a response from the ActionState check, proceed with a regular check.
+    if (empty($response)) {
+      $action = $this->data->text;
 
-    // Check all of the triggers to see if there are any Actions to run.
-    foreach ($this->triggers as $trigger_key => $trigger) {
-      // If the input triggers a command, run the action associated with the trigger.
-      if ($trigger->isTriggered($action)) {
-        $response = $trigger->performAction($this->data, $this->state);
-        break;
+      // Check all of the triggers to see if there are any Actions to run.
+      foreach ($this->triggers as $trigger_key => $trigger) {
+        // If the input triggers a command, run the action associated with the trigger.
+        if ($trigger->isTriggered($action)) {
+          $response = $trigger->performAction($this->data, $this->state);
+          break;
+        }
       }
     }
 

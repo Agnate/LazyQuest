@@ -2,12 +2,15 @@
 
 namespace Agnate\LazyQuest\Action;
 
+use Agnate\LazyQuest\ActionChain;
 use Agnate\LazyQuest\ActionData;
+use Agnate\LazyQuest\ActionLink;
 use Agnate\LazyQuest\ActionState;
 use Agnate\LazyQuest\App;
 use Agnate\LazyQuest\Guild;
 use Agnate\LazyQuest\Message;
 use Agnate\LazyQuest\Message\Attachment;
+use Agnate\LazyQuest\Message\AttachmentButton;
 
 class RegisterAction extends BaseAction {
 
@@ -92,13 +95,14 @@ class RegisterAction extends BaseAction {
     // Set ActionState to the next step.
     $this->gotoNextStep($data, $state);
 
-    $text[] = "Registering a Guild involves two parts:";
-    $text[] = "*Guild name:* This is the name of your Guild (example: `" . $this->example_guild->display('N') . "`).";
-    $text[] = "*Guild icon:* This is the emoji icon of your Guild (example: `" . $this->example_guild->display('I') . "`).";
+    $text[] = "Registering a Guild requires two things:";
+    $text[] = "- *Guild name:* This is the name of your Guild (example: `" . $this->example_guild->display('N') . "`).";
+    $text[] = "- *Guild icon:* This is the emoji icon of your Guild (example: `" . $this->example_guild->display('I') . "`).";
+    $text[] = "";
     $text[] = "Your Guild's name will be shown to other players as the icon and name chosen.";
     $text[] = "Example: " . $this->example_guild->display();
     $text[] = "";
-    $text[] = "*Guild name:*";
+    $text[] = "1) *Guild name:*";
     $text[] = "So, what's your Guild's name?";
 
     return Message::reply($text, $data->channel, $data);
@@ -117,7 +121,7 @@ class RegisterAction extends BaseAction {
       $step->wait = TRUE;
 
       // Give an error message back to the user.
-      $text[] = "The name you use cannot be longer than 255 characters. Please choose a shorter name.";
+      $text[] = "The name you choose must be 255 characters or less. Please choose a shorter name.";
       return Message::reply($text, $data->channel, $data);
     }
 
@@ -139,7 +143,7 @@ class RegisterAction extends BaseAction {
     // Send as a new chat instead of updating the current one.
     $data->clearForNewMessage();
 
-    $text[] = "*Guild icon:*";
+    $text[] = "2) *Guild icon:*";
     $text[] = "What will your Guild's icon be? Make sure you use an emoji!";
 
     return Message::reply($text, $data->channel, $data);
@@ -180,7 +184,12 @@ class RegisterAction extends BaseAction {
     // Send as a new chat instead of updating the current one.
     $data->clearForNewMessage();
 
-    $text = "You have chosen:\n" . $state->extra['icon'] . ' ' . $state->extra['name'];
+    $test_guild = new Guild (array('name' => $state->extra['name'], 'icon' => $state->extra['icon']));
+
+    $text[] = "You have chosen:";
+    $text[] = $test_guild->display();
+    $text[] = "";
+    $text[] = "Are you happy with this name? You will _not_ be able to change your Guild's name for the duration of the game season. You can change your Guild's icon at any time though.";
     return $this->getApprovalMessage($text, $data, $state);
   }
 
@@ -206,7 +215,25 @@ class RegisterAction extends BaseAction {
         $messages[] = Message::error('There was an error saving your new Guild.', $data->channel, $data);
       }
       else {
-        $messages[] = Message::reply('You just registered ' . $guild->display() . '.', $data->channel, $data, FALSE);
+        // Ask if they want to do the tutorial or not.
+        $text[] = "You just registered " . $guild->display() . ". Welcome to Lazy Quest!";
+        
+        $attachment = new Attachment ([
+          'title' => "Getting started",
+          'text' => "If you have not played Lazy Quest before, click on Tutorial and I can guide you on how to get started, the objectives of the game, and what to expect. If you've played Lazy Quest before, use _Skip_ to take you to the list of actions.",
+          'callback_id' => $state->callbackID(),
+        ]);
+
+        // Create ActionChains for Tutorial and Skip buttons.
+        $link_hello = ActionLink::create('hello');
+        $attachment->addButton(AttachmentButton::fromChain(new ActionChain (['actions' => [$link_hello, ActionLink::create('help')]]), "Tutorial", AttachmentButton::STYLE_PRIMARY));
+        $attachment->addButton(AttachmentButton::fromChain(new ActionChain (['actions' => [$link_hello]]), "Skip"));
+
+        // Create the message.
+        $message = Message::reply($text, $data->channel, $data, FALSE);
+        $message->attachments = array($attachment);
+
+        $messages[] = $message;
         $messages[] = Message::globally($guild->display('U') . ' just registered a Guild named ' . $guild->display() . '!');
       }
     }

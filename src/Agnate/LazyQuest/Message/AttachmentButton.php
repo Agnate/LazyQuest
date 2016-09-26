@@ -2,6 +2,7 @@
 
 namespace Agnate\LazyQuest\Message;
 
+use \Agnate\LazyQuest\ActionChain;
 use \Agnate\LazyQuest\EntityBasic;
 use \Exception;
 
@@ -89,5 +90,33 @@ class AttachmentButton extends EntityBasic {
     }
 
     return implode('', $response);
+  }
+
+
+  /* =================================
+     ______________  ________________
+    / ___/_  __/   |/_  __/  _/ ____/
+    \__ \ / / / /| | / /  / // /
+   ___/ // / / ___ |/ / _/ // /___
+  /____//_/ /_/  |_/_/ /___/\____/
+
+  ==================================== */
+
+  /**
+   * Create an AttachmentButton based on an ActionChain.
+   * @param ActionChain $chain The instance of ActionChain to encode into a button.
+   * @param string $text The button text to use.
+   * @param string $style The button style to use. @see AttachmentButton constants for list. Defaults to AttachmentButton::STYLE_DEFAULT.
+   * @return AttachmentButton Returns an instance of AttachmentButton encoded using the ActionChain.
+   */
+  public static function fromChain (ActionChain $chain, $text, $style = AttachmentButton::STYLE_DEFAULT) {
+    $encoded = $chain->encode();
+
+    return new AttachmentButton ([
+      'text' => $text,
+      'value' => $encoded,
+      'name' => $encoded,
+      'style' => $style,
+    ]);
   }
 }
