@@ -9,6 +9,7 @@ use Agnate\LazyQuest\EntityBasic;
 use Agnate\LazyQuest\Exception\GameException;
 use Agnate\LazyQuest\Message;
 use Agnate\LazyQuest\Message\Attachment;
+use Agnate\LazyQuest\Message\Channel;
 
 class BaseAction extends EntityBasic {
 
@@ -30,6 +31,8 @@ class BaseAction extends EntityBasic {
         'slack_id' => $data->user,
         'team_id' => $data->team()->tid,
         'timestamp' => $data->message_ts,
+        'channel_id' => $data->channel,
+        // 'original_message' => $data->original_message,
         'action' => $data->actionChain()->encode(),
         'step' => $step->name,
         'extra' => array(),
@@ -69,6 +72,8 @@ class BaseAction extends EntityBasic {
     // Keep performing steps until you need input or we are out of steps.
     $count = 0;
     $messages = [];
+    // Count is used to prevent an infinite loop. If an action has more than 20 steps without iteraction
+    // from the user, please refactor the steps.
     while ($count < 20) {
       // Get the current step's instance.
       $step = $this->getStep($state->step);
@@ -112,6 +117,14 @@ class BaseAction extends EntityBasic {
       // Fail-safe in case something breaks in the loop.
       $count++;
     }
+
+    // Save the reply as the original_message in the ActionState so we can remove Cancel buttons later.
+    // foreach ($messages as $message) {
+    //   if (!($message->channel instanceof Channel)) continue;
+    //   if ($message->channel->type != Channel::TYPE_UPDATE) continue;
+    //   $state->original_message = json_decode(json_encode($message));
+    //   $state->save();
+    // }
 
     return $messages;
   }
@@ -191,5 +204,24 @@ class BaseAction extends EntityBasic {
     $message = Message::reply($text, $data->channel, $data, FALSE);
     $message->addAttachment(Attachment::approval($state->callbackID('approval'), $confirm->encode(), $cancel->encode()));
     return $message;
+  }
+
+  /**
+   * Adjust the ActionData and ActionState to allow for a new Message instead of updating the original one.
+   * This should be used before requesting text input from the user to continue the action properly and
+   * remove the previous Cancel button (and all attachments).
+   */
+  public function newMessage (ActionData $data, ActionState $state) {
+    // * @return Message Returns a Message to dispatch to clean up the previous message.
+
+    // Send as a new chat instead of updating the current one.
+    $data->clearForNewMessage();
+
+    // TODO: Instead of clearing ALL attachments, we could keep the previous Message serialized in the database and use that
+    // to reconstruct the old Message but without any buttons.
+
+
+    // Reply with no attachments to clear out Cancel buttons.
+    // return $state->clearAttachments();
   }
 }

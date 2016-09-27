@@ -15,6 +15,7 @@ class Entity extends EntityBasic {
   static $primary_key = '';
   static $relationships = array(); // Array of 'field_name' => '\Agnate\LazyQuest\Class' pairs to define the relationships to other Entity instances.
   static $fields_serialize; // Array: any field keys set in this array will be automatically serialized on save and unserialized on load.
+  static $fields_json; // Array: any field keys set in this array will be automatically json_encode() on save and json_decode() on load.
 
   /**
    * Construct the entity and set data inside.
@@ -71,6 +72,29 @@ class Entity extends EntityBasic {
   }
 
   /**
+   * json_decode() all of the fields on this instance.
+   */
+  public function jsonDecode () {
+    if (!empty(static::$fields_json)) {
+      foreach (static::$fields_json as $field) {
+        if (is_string($this->{$field})) {
+          $this->{$field} = json_decode($this->{$field});
+        }
+      }
+    }
+  }
+
+  /**
+   * Set a JSON property so that it encodes upon adding it.
+   * @param string $property_name The name of the property to save it to.
+   * @param * $value The data to json_encode(). Note that this value MUST be able to be encoded properly by json_encode() function.
+   * @return Array Returns an json_encode() array of the value.
+   */
+  // public function setJsonProperty($property_name, $value) {
+  //   $this->{$property_name} = json_encode(value)
+  // }
+
+  /**
    * Adjust the data Array before it is saved to the database.
    * @param $data The data Array to be saved to the database. Includes all public-visible fields on this Entity.
    */
@@ -83,6 +107,15 @@ class Entity extends EntityBasic {
         }
       }
     }
+
+    // json_encode() all of the values.
+    if (!empty(static::$fields_json)) {
+      foreach (static::$fields_json as $field) {
+        if (!is_string($data[$field])) {
+          $data[$field] = json_encode($this->{$field});
+        }
+      }
+    }
   }
 
   /**
@@ -92,6 +125,9 @@ class Entity extends EntityBasic {
   public function afterLoad () {
     // Unserialize registered fields.
     $this->unserialize();
+
+    // json_decode() registered fields.
+    $this->jsonDecode();
   }
 
   

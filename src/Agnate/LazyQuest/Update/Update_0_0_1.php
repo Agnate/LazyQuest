@@ -54,6 +54,8 @@ class Update_0_0_1 extends UpdateBase {
     $fields[] = "guild_id VARCHAR(255) NOT NULL";
     $fields[] = "slack_id VARCHAR(255) NOT NULL";
     $fields[] = "timestamp VARCHAR(255) NOT NULL"; // Slack timestamps are different, so save as string.
+    $fields[] = "channel_id VARCHAR(255) NOT NULL";
+    $fields[] = "original_message LONGTEXT NOT NULL";
     $fields[] = "action VARCHAR(255) NOT NULL";
     $fields[] = "step VARCHAR(255) NOT NULL";
     $fields[] = "extra LONGTEXT NOT NULL";

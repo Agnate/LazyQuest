@@ -2,6 +2,8 @@
 
 namespace Agnate\LazyQuest;
 
+use \stdClass;
+
 class ActionState extends Entity {
 
   public $asid;
@@ -9,6 +11,8 @@ class ActionState extends Entity {
   public $guild_id; // May not exist
   public $slack_id;
   public $timestamp;
+  public $channel_id;
+  public $original_message;
   public $action; // Contains ActionChain.
   public $step;
   public $extra;
@@ -25,6 +29,7 @@ class ActionState extends Entity {
     'guild_id' => '\Agnate\LazyQuest\Guild',
   );
   static $fields_serialize = array('extra');
+  static $fields_json = array('original_message');
   static $fields_int = array();
   static $fields_array = array();
 
@@ -38,10 +43,6 @@ class ActionState extends Entity {
     
     // Convert $this->action to ActionChain.
     $this->actionChain();
-    // if (!empty($this->action) && is_string($this->action))
-    //   $this->action = ActionChain::create($this->action);
-    // else if (empty($this->action) || !($this->action instanceof \Agnate\RPG\ActionChain))
-    //   $this->action = new ActionChain;
   }
 
   /**
@@ -72,6 +73,32 @@ class ActionState extends Entity {
    */
   public function callbackID ($suffix = NULL) {
     return $this->slack_id . '__' . $this->getRelationship('team_id')->team_id . (!empty($suffix) ? '__' . $suffix : '');
+  }
+
+  /**
+   * Clear attachments from the Slack message with this ActionState's timestamp.
+   * Typically this is used when you want to clear out the Cancel button attachment.
+   * @return Message Returns a Message to dispatch that will clear out the attachments.
+   *    Note that it clears ALL attachments, not just the Cancel button.
+   */
+  public function clearAttachments () {
+    // Create fake ActionData based on the ActionState timestamp.
+    $data = new ActionData ([
+      'message_ts' => $this->timestamp,
+      'user' => $this->slack_id,
+      'team' => $this->getRelationship('team_id')->team_id,
+    ]);
+
+    // Extract the text from Message.
+    // if (is_array($this->original_message)) $text = $this->original_message['text'];
+    // else if (!empty($this->original_message)) $text = $this->original_message->text;
+
+    $text = !empty($this->original_message->text) ? $this->original_message->text : 'Message was not saved.';
+
+    // Clear out the original_message now.
+    $this->original_message = new stdClass;
+
+    return Message::reply($text, $this->channel_id, $data, FALSE);
   }
 
 

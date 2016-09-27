@@ -141,12 +141,14 @@ class RegisterAction extends BaseAction {
     $this->gotoNextStep($data, $state);
 
     // Send as a new chat instead of updating the current one.
-    $data->clearForNewMessage();
+    $this->newMessage($data, $state);
 
+    // Create the Message.
     $text[] = "2) *Guild icon:*";
     $text[] = "What will your Guild's icon be? Make sure you use an emoji!";
+    $messages[] = Message::reply($text, $data->channel, $data);
 
-    return Message::reply($text, $data->channel, $data);
+    return $messages;
   }
 
   /**
@@ -182,15 +184,19 @@ class RegisterAction extends BaseAction {
     $this->gotoNextStep($data, $state);
 
     // Send as a new chat instead of updating the current one.
-    $data->clearForNewMessage();
+    $this->newMessage($data, $state);
 
+    // Create a test Guild so that we can just use the display() method to output the Guild name.
     $test_guild = new Guild (array('name' => $state->extra['name'], 'icon' => $state->extra['icon']));
 
+    // Construct the message.
     $text[] = "You have chosen:";
     $text[] = $test_guild->display();
     $text[] = "";
     $text[] = "Are you happy with this name? You will _not_ be able to change your Guild's name for the duration of the game season. You can change your Guild's icon at any time though.";
-    return $this->getApprovalMessage($text, $data, $state);
+    $messages[] = $this->getApprovalMessage($text, $data, $state);
+
+    return $messages;
   }
 
   /**

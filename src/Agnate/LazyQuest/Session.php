@@ -44,6 +44,8 @@ class Session {
     // Convert this to an ActionData instance to make it easier to manage.
     $this->data = new ActionData ($data);
 
+    App::logger()->notice(var_export($this->data, TRUE));
+
     // Make sure there is a Season running.
     if (empty($this->data->season())) return array(Message::noSeason('', $this->data->channel, $this->data));
 
