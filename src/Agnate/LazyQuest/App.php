@@ -7,6 +7,7 @@ class App {
   protected static $started = FALSE;
   protected static $database;
   protected static $logger;
+  protected static $cache;
 
   protected static $logger_table = 'logs';
   protected static $logger_primary_key = 'log_id';
@@ -120,6 +121,18 @@ class App {
     \Zend\Log\Logger::registerErrorHandler(static::$logger);
 
     return static::$logger;
+  }
+
+  /**
+   * Get the cachine object used to cache unimportant data.
+   */
+  public static function cache () {
+    if (!empty(static::$cache)) return static::$cache;
+
+    // Create a new Cache instance.
+    static::$cache = new Cache;
+
+    return static::$cache;
   }
   
   /**

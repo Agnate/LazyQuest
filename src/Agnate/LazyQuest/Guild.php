@@ -27,50 +27,40 @@ class Guild extends Entity {
 
   /**
    * Render the name and icon of the Guild.
-   * @param $pattern The pattern to display. Default pattern is "I *N*".
+   * @param string $pattern The pattern to display. Default pattern is "I *N*".
    *    Accepts any Slack markup and the following tokens:
    *    U - Username or Slack handle (example: @paul)
    *    N - Guild name
    *    I - Guild icon
    */
   public function display ($pattern = "I *N*") {
-    $tokens = array(
-      '|%U%|' => 'U',
-      '|%N%|' => 'N',
-      '|%I%|' => 'I',
-    );
-    // Replace single-letter tokens with more complex tokens.
-    $tokened = str_replace(array_values($tokens), array_keys($tokens), $pattern);
+    // Set the replacement information.
+    $info = [
+      'U' => '@' . $this->username,
+      'N' => $this->name,
+      'I' => $this->icon,
+    ];
 
-    // Replace old single-letter tokens with actual values.
-    foreach ($tokens as $key => $value) {
-      switch ($value) {
-        case 'U': $tokens[$key] = '@' . $this->username; break;
-        case 'N': $tokens[$key] = $this->name; break;
-        case 'I': $tokens[$key] = $this->icon; break;
-      }
-    }
-
-    // Replace tokens with actual values.
-    return str_replace(array_keys($tokens), array_values($tokens), $tokened);
+    return parent::display($pattern, $info);
   }
 
   /**
    * Return the Slack channel name for this player.
+   * @return string Return the name of the Slack channel for this player.
    */
   public function getChannelName () {
     return '@' . $name;
   }
 
 
-  /* =================================
+  /**
      ______________  ________________
     / ___/_  __/   |/_  __/  _/ ____/
     \__ \ / / / /| | / /  / // /
    ___/ // / / ___ |/ / _/ // /___
   /____//_/ /_/  |_/_/ /___/\____/
 
-  ==================================== */
+  */
 
   /**
    * Determine if this is a valid name or not.
