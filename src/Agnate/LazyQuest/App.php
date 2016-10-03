@@ -130,7 +130,7 @@ class App {
     if (!empty(static::$cache)) return static::$cache;
 
     // Create a new Cache instance.
-    static::$cache = new Cache;
+    static::$cache = new Cache (GAME_CACHE_SERVER, GAME_CACHE_PORT);
 
     return static::$cache;
   }

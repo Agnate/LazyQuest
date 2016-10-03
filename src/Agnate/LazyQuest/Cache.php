@@ -6,14 +6,26 @@ use \Memcache;
 
 class Cache {
 
+  public $server;
+  public $port;
   public $cache;
 
   /**
    * Initialize an instance to the Cache. Currently using Memcache.
    */
-  function __construct () {
+  function __construct ($server, $port, $start = TRUE) {
+    $this->server = $server;
+    $this->port = $port;
+
+    if ($start) $this->start();
+  }
+
+  /**
+   * Start the Cache server.
+   */
+  public function start () {
     $this->cache = new Memcache;
-    $this->cache->addServer("localhost", 11211);
+    $this->cache->addServer($this->server, $this->port);
   }
 
   /**

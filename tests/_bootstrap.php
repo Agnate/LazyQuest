@@ -1,6 +1,7 @@
 <?php
 
-print "Bootstrap!\n\n";
+// Require any basic config and setup we need.
+require_once('basics.php');
 
 // Set up the cache instance.
 $cache = Agnate\LazyQuest\App::cache();

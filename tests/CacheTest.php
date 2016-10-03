@@ -17,7 +17,14 @@ class CacheTest extends TestCase {
     // ---------------------------
     // __construct() & properties
     // ---------------------------
-    $cache = new Cache;
+    $cache = new Cache (GAME_CACHE_SERVER, GAME_CACHE_PORT);
+    
+    // $server
+    $this->assertEquals(GAME_CACHE_SERVER, $cache->server);
+
+    // $port
+    $this->assertEquals(GAME_CACHE_PORT, $cache->port);
+
     // $cache
     $this->assertInstanceOf(Memcache::class, $cache->cache);
 
