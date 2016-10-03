@@ -30,7 +30,7 @@ class CacheTest extends TestCase {
     $this->assertTrue($cache->save($data['key'], $data['value']));
 
     // load()
-    $this->assertEquals($cache->load($data['key']), $data['value']);
+    $this->assertEquals($data['value'], $cache->load($data['key']));
 
   }
 

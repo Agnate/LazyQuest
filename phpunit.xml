@@ -1,5 +1,9 @@
-<testsuites>
-  <testsuite name="Lazy Quest Test Suite">
-    <directory suffix="Test.php">tests</directory>
-  </testsuite>
-</testsuites>
+<phpunit
+  bootstrap="tests/_bootstrap.php"
+>
+  <testsuites>
+    <testsuite name="Lazy Quest Test Suite">
+      <directory suffix="Test.php">tests</directory>
+    </testsuite>
+  </testsuites>
+</phpunit>

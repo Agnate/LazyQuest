@@ -30,6 +30,14 @@ class TokenData {
   }
 
   /**
+   * Set everything to have default values where applicable.
+   */
+  protected function setDefaults () {
+    $this->join = '';
+    $this->parts = array();
+  }
+
+  /**
    * Save to cache.
    * @return boolean Returns TRUE if successfully saved, FALSE otherwise.
    */
@@ -45,6 +53,9 @@ class TokenData {
   public function load () {
     // Load data from cache.
     $data = App::cache()->load($this->key);
+
+    // Set defaults.
+    $this->setDefaults();
 
     // Extract data from data.
     if ($data !== FALSE) $this->extract($data);
@@ -87,6 +98,11 @@ class TokenData {
     // Remove excluded keys.
     foreach (static::$exclude as $key) {
       unset($data[$key]);
+    }
+
+    // Remove entries set to NULL.
+    foreach ($data as $key => $value) {
+      if ($value === NULL) unset($data[$key]);
     }
 
     return $data;
@@ -137,15 +153,13 @@ class TokenData {
           $index = array_rand($piece);
         }
 
-        $name[] = $piece[$index];
+        $pieces[] = $piece[$index];
         unset($piece[$index]);
       }
     }
 
     // Save this TokenData if requested.
-    if ($save) {
-      $this->save();
-    }
+    if ($save) $this->save();
 
     return implode($this->join, $pieces);
   }

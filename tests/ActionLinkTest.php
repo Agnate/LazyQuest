@@ -15,13 +15,13 @@ class ActionLinkTest extends TestCase {
     // __construct() & properties
     $link = new ActionLink ($action_array);
     // $action
-    $this->assertEquals($link->action, $action_array['action']);
+    $this->assertEquals($action_array['action'], $link->action);
     // $subaction
-    $this->assertEquals($link->subaction, $action_array['subaction']);
+    $this->assertEquals($action_array['subaction'], $link->subaction);
     // $options
     if (empty($action_array['options'])) $options = array();
     else $options = $action_array['options'];
-    $this->assertEquals($link->options, $options);
+    $this->assertEquals($options, $link->options);
 
 
     // ----------------------------
@@ -29,10 +29,10 @@ class ActionLinkTest extends TestCase {
     // ----------------------------
 
     // decode()
-    $this->assertEquals(ActionLink::decode($action_string), $action_array);
+    $this->assertEquals($action_array, ActionLink::decode($action_string));
 
     // create()
-    $this->assertEquals(ActionLink::create($action_string), $link);
+    $this->assertEquals($link, ActionLink::create($action_string));
 
 
     // ------------------------------
@@ -41,8 +41,8 @@ class ActionLinkTest extends TestCase {
 
     // encoding()
     // Test encoding against either the valid action string (if provided) or the original action string.
-    if (is_string($valid_action_string)) $this->assertEquals($link->encode(), $valid_action_string);
-    else $this->assertEquals($link->encode(), $action_string);
+    if (is_string($valid_action_string)) $this->assertEquals($valid_action_string, $link->encode());
+    else $this->assertEquals($action_string, $link->encode());
   }
 
   public function actionStringProvider() {

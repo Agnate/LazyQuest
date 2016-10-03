@@ -16,7 +16,7 @@ class ActionChainTest extends TestCase {
     // __construct() & properties
     $chain = new ActionChain (['actions' => $data['actions']]);
     // $action
-    $this->assertEquals($chain->actions, $data['actions']);
+    $this->assertEquals($data['actions'], $chain->actions);
 
 
     // -----------------------------
@@ -24,14 +24,14 @@ class ActionChainTest extends TestCase {
     // -----------------------------
 
     // decode()
-    $this->assertEquals(ActionChain::decode($data['encoded']), $data['actions']);
+    $this->assertEquals($data['actions'], ActionChain::decode($data['encoded']));
 
     // create() [using String]
-    $this->assertEquals(ActionChain::create($data['encoded']), $chain);
+    $this->assertEquals($chain, ActionChain::create($data['encoded']));
     // create() [using Array]
-    $this->assertEquals(ActionChain::create($data['actions']), $chain);
+    $this->assertEquals($chain, ActionChain::create($data['actions']));
     // create() [using params as ActionLink instances]
-    $this->assertEquals(forward_static_call_array(['Agnate\LazyQuest\ActionChain', 'create'], $data['actions']), $chain);
+    $this->assertEquals($chain, forward_static_call_array(['Agnate\LazyQuest\ActionChain', 'create'], $data['actions']));
 
 
     // -------------------------------
@@ -40,15 +40,15 @@ class ActionChainTest extends TestCase {
 
     // encoding()
     // Test encoding against either the valid action string (if provided) or the original action string.
-    if (isset($data['decoded']) && is_string($data['decoded'])) $this->assertEquals($chain->encode(), $data['decoded']);
-    else $this->assertEquals($chain->encode(), $data['encoded']);
+    if (isset($data['decoded']) && is_string($data['decoded'])) $this->assertEquals($data['decoded'], $chain->encode());
+    else $this->assertEquals($data['encoded'], $chain->encode());
 
     // currentAction()
     $current = end($data['actions']);
-    $this->assertEquals($chain->currentAction(), $current);
+    $this->assertEquals($current, $chain->currentAction());
 
     // currentActionName()
-    $this->assertEquals($chain->currentActionName(), $current->action);
+    $this->assertEquals($current->action, $chain->currentActionName());
 
     // prevAction()
     // prevActionName()
@@ -56,8 +56,8 @@ class ActionChainTest extends TestCase {
     $length = count($data['actions']);
     if ($length > 1) {
       $prev = $data['actions'][$length - 2];
-      $this->assertEquals($chain->prevAction(), $prev);
-      $this->assertEquals($chain->prevActionName(), $prev->action);
+      $this->assertEquals($prev, $chain->prevAction());
+      $this->assertEquals($prev->action, $chain->prevActionName());
     }
 
     /**

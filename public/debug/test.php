@@ -2,6 +2,13 @@
 
 require_once('../../bootstrap.php');
 
+use Agnate\LazyQuest\Data\TokenData;
+
+$token = new TokenData ('test', array('join' => '-', 'parts' => array('a', array('b1', 'b2'))));
+
+var_export($token->random(FALSE));
+
+
 // use Agnate\LazyQuest\Team;
 
 // $team = new Team (array(
