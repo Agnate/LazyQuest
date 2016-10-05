@@ -19,39 +19,75 @@ class FormatData extends CacheData {
   }
 
   /**
-   * Get a random item from the list.
-   * @param boolean $save Whether or not to save the TokenData after generating a random token.
-   * @return string Returns the generated name based on the TokenData settings.
+   * Get a random format from the list.
+   * @param boolean $save Whether or not to save the FormatData after generating a random format.
+   * @return string Returns the generated format based on the FormatData settings.
    */
-  // public function random ($save = TRUE) {
-  //   $pieces = array();
-  //   foreach ($this->parts as $key => &$piece) {
-  //     // If the piece is a string, just use it.
-  //     if (is_string($piece)) {
-  //       $pieces[] = $piece;
-  //       continue;
-  //     }
-
-  //     // If the piece is an array, we need to pick one from the list.
-  //     if (is_array($piece)) {
-  //       $index = array_rand($piece);
+  public function random ($save = TRUE) {
+    // Choose a format from the list.
+    $index = array_rand($this->formats);
         
-  //       // Re-index the list as it appears to be empty.
-  //       if ($index === NULL) {
-  //         // Load up the original to grab the parts.
-  //         $piece = $original->parts[$key];
-  //         $index = array_rand($piece);
-  //       }
+    // Re-index the list as it appears to be empty.
+    if ($index === NULL) {
+      // Load up the original to grab the formats.
+      $this->formats = $this->original()->formats;
+      // Find a new index.
+      $index = array_rand($this->formats);
+    }
 
-  //       $pieces[] = $piece[$index];
-  //       unset($piece[$index]);
-  //     }
-  //   }
+    // If we could not pick an array item, we were unsuccessful.
+    if (empty($index) && $index !== 0) return FALSE;
 
-  //   // Save this TokenData if requested.
-  //   if ($save) $this->save();
+    // Select the format we found.
+    $format = $this->formats[$index];
+    // Remove the format so that it isn't repeated as often.
+    unset($this->formats[$index]);
 
-  //   return implode($this->join, $pieces);
-  // }
+    // Get a list of tokens used in the format.
+    $token_names = FormatData::getTokens($format);
+
+    // Fetch the TokenData for the found tokens.
+    $tokens = App::filterTokens($token_names);
+
+    // If we do not have the proper amount of tokens, set a logger error.
+    if (count($token_names) != count($tokens)) {
+      App::logger()->error("FormatData contains token but no TokenData exists. Format used:\n" . $format . "\n\nTokens found: [" . implode('], [', array_keys($tokens)) . "]");
+      return FALSE;
+    }
+
+    // Generate a random token for each TokenData.
+    $replacements = array();
+    foreach ($tokens as $token) {
+      $replacements[$token->display()] = $token->random($save);
+    }
+
+    // Replace any tokens in the format.
+    $format = str_replace(array_keys($replacements), array_values($replacements), $format);
+
+    // Save this FormatData if requested.
+    if ($save) $this->save();
+
+    return $format;
+  }
+
+
+  /**
+     ______________  ________________
+    / ___/_  __/   |/_  __/  _/ ____/
+    \__ \ / / / /| | / /  / // /
+   ___/ // / / ___ |/ / _/ // /___
+  /____//_/ /_/  |_/_/ /___/\____/
+
+  */
+
+  /**
+   * Get a list of tokens used in a format.
+   * @param string $format The format to look through for tokens.
+   * @return Array Returns a list of token strings found in the format.
+   */
+  protected static function getTokens ($format) {
+    if (!preg_match_all("/\[([^\]]*)\]+?/", $format, $matches)) return array();
+    return $matches[1];
+  }
 
 }

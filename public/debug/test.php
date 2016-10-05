@@ -2,19 +2,32 @@
 
 require_once('../../bootstrap.php');
 
+use Kint;
+
 
 use Agnate\LazyQuest\App;
-use Kint;
+use Agnate\LazyQuest\Data\FormatData;
+
 
 App::start();
 
-$tokens = App::tokens();
+// $tokens = App::tokens();
+// d($tokens);
+// d($tokens['town-name']->random());
+// d($tokens);
 
-d($tokens);
+$formats = App::formats();
+d($formats);
+d($formats['town']->random());
 
-d($tokens['town-name']->random());
 
-d($tokens);
+// $format = 'This is a [town-name] town with [creature] in it.';
+// d($format);
+// d(FormatData::getTokens($format));
+
+// $format = 'There are no tokens in here.';
+// d($format);
+// d(FormatData::getTokens($format));
 
 
 // use Agnate\LazyQuest\Data\TokenData;

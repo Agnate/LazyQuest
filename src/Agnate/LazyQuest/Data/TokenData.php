@@ -41,11 +41,16 @@ class TokenData extends CacheData {
         // Re-index the list as it appears to be empty.
         if ($index === NULL) {
           // Load up the original to grab the parts.
-          $piece = $original->parts[$key];
+          $piece = $this->original()->parts[$key];
           $index = array_rand($piece);
         }
 
+        // If we could not pick an array item, skip this part.
+        if (empty($index) && $index !== 0) continue;
+
+        // Select the piece we found.
         $pieces[] = $piece[$index];
+        // Remove the piece so that it isn't repeated as often.
         unset($piece[$index]);
       }
     }
@@ -54,6 +59,14 @@ class TokenData extends CacheData {
     if ($save) $this->save();
 
     return implode($this->join, $pieces);
+  }
+
+  /**
+   * Convert a TokenData key into a string token for use by FormatData.
+   * @return string Returns the key converted into a string token.
+   */
+  public function display () {
+    return "[" . $this->key . "]";
   }
 
 }

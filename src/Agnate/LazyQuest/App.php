@@ -2,6 +2,7 @@
 
 namespace Agnate\LazyQuest;
 
+use \Agnate\LazyQuest\Data\FormatData;
 use \Agnate\LazyQuest\Data\TokenData;
 
 class App {
@@ -11,6 +12,7 @@ class App {
   protected static $logger;
   protected static $cache;
   protected static $tokens;
+  protected static $formats;
 
   protected static $logger_table = 'logs';
   protected static $logger_primary_key = 'log_id';
@@ -55,6 +57,9 @@ class App {
     // Load up all the TokenData from JSON files into Cache.
     static::loadTokens();
 
+    // Load up all the FormatData from JSON files into Cache.
+    static::loadFormats();
+
     // Set App to started.
     static::$started = TRUE;
 
@@ -68,6 +73,14 @@ class App {
     if (!isset(static::$tokens)) static::loadTokens();
 
     return static::$tokens;
+  }
+
+  /**
+   * List of token names to filter the token list by.
+   * @param Array $token_names List of token names (as strings) to get the TokenData for.
+   */
+  public static function filterTokens ($token_names) {
+    return array_intersect_key(static::tokens(), array_flip($token_names));
   }
 
   /**
@@ -85,6 +98,33 @@ class App {
       else $token = TokenData::fromJsonFile($key, $filename);
 
       static::$tokens[$key] = $token;
+    }
+  }
+
+  /**
+   * Get the existing formats loaded by App.
+   */
+  public static function formats () {
+    if (!isset(static::$formats)) static::loadFormats();
+
+    return static::$formats;
+  }
+
+  /**
+   * Load up all the FormatData from JSON files into Cache.
+   */
+  protected static function loadFormats () {
+    // Glob all JSON files and store randomization formats into the Cache for each file.
+    foreach (glob(GAME_SERVER_ROOT . "/data/formats/[!__]*.json") as $filename) {
+      // Scrub the filename.
+      $key = substr($filename, strrpos($filename, '/') + 1, -5);
+
+      // Check if there is already an entry in Cache. No need to add it again if it's there.
+      if (FormatData::isCached($key)) $format = new FormatData ($key);
+      // Create the new FormatData (including the original) and store in Cache.
+      else $format = FormatData::fromJsonFile($key, $filename);
+
+      static::$formats[$key] = $format;
     }
   }
 

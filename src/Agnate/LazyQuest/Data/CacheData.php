@@ -66,7 +66,7 @@ class CacheData {
    * @return CacheData Returns the instance of CacheData containing the original data.
    */
   public function original () {
-    if (!isset($this->_original)) $this->_original = new CacheData (CacheData::originalKey($this->key));
+    if (!isset($this->_original)) $this->_original = new static (static::originalKey($this->key));
     return $this->_original;
   }
 
@@ -75,9 +75,9 @@ class CacheData {
    * @param CacheData The original CacheData instance of this key.
    * @return boolean Returns TRUE if it was successful, FALSE otherwise.
    */
-  public function setOriginal (CacheData $original) {
+  public function setOriginal ($original) {
     // Make sure the keys match.
-    if (CacheData::originalKey($this->key) != $original->key) return FALSE;
+    if (static::originalKey($this->key) != $original->key) return FALSE;
 
     $this->_original = $original;
 
