@@ -2,11 +2,26 @@
 
 require_once('../../bootstrap.php');
 
-use Agnate\LazyQuest\Data\TokenData;
 
-$token = new TokenData ('test', array('join' => '-', 'parts' => array('a', array('b1', 'b2'))));
+use Agnate\LazyQuest\App;
+use Kint;
 
-var_export($token->random(FALSE));
+App::start();
+
+$tokens = App::tokens();
+
+d($tokens);
+
+d($tokens['town-name']->random());
+
+d($tokens);
+
+
+// use Agnate\LazyQuest\Data\TokenData;
+
+// $token = new TokenData ('test', array('join' => '-', 'parts' => array('a', array('b1', 'b2'))));
+
+// var_export($token->random(FALSE));
 
 
 // use Agnate\LazyQuest\Team;

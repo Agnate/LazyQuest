@@ -2,12 +2,15 @@
 
 namespace Agnate\LazyQuest;
 
+use \Agnate\LazyQuest\Data\TokenData;
+
 class App {
 
   protected static $started = FALSE;
   protected static $database;
   protected static $logger;
   protected static $cache;
+  protected static $tokens;
 
   protected static $logger_table = 'logs';
   protected static $logger_primary_key = 'log_id';
@@ -46,10 +49,43 @@ class App {
       static::$database = new Database (DB_HOST, DB_NAME, DB_USER, DB_PASS);
     }
 
+    // Initialize the cache.
+    static::cache();
+
+    // Load up all the TokenData from JSON files into Cache.
+    static::loadTokens();
+
     // Set App to started.
     static::$started = TRUE;
 
     return static::$started;
+  }
+
+  /**
+   * Get the existing tokens loaded by App.
+   */
+  public static function tokens () {
+    if (!isset(static::$tokens)) static::loadTokens();
+
+    return static::$tokens;
+  }
+
+  /**
+   * Load up all the TokenData from JSON files into Cache.
+   */
+  protected static function loadTokens () {
+    // Glob all JSON files and store randomization tokens into the Cache for each file.
+    foreach (glob(GAME_SERVER_ROOT . "/data/tokens/[!__]*.json") as $filename) {
+      // Scrub the filename.
+      $key = substr($filename, strrpos($filename, '/') + 1, -5);
+
+      // Check if there is already an entry in Cache. No need to add it again if it's there.
+      if (TokenData::isCached($key)) $token = new TokenData ($key);
+      // Create the new TokenData (including the original) and store in Cache.
+      else $token = TokenData::fromJsonFile($key, $filename);
+
+      static::$tokens[$key] = $token;
+    }
   }
 
   /**

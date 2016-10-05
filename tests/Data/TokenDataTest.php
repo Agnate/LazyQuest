@@ -18,9 +18,6 @@ class TokenDataTest extends TestCase {
     // Also tests extract().
     $token = new TokenData ($data['key'], $data['data']);
     
-    // $key
-    $this->assertEquals($data['key'], $token->key);
-    
     // $join
     if (isset($data['data']['join'])) $this->assertEquals($data['data']['join'], $token->join);
     else $this->assertEquals('', $token->join);
@@ -34,10 +31,7 @@ class TokenDataTest extends TestCase {
     // TokenData static functions
     // ---------------------------
 
-    // originalKey()
-    $this->assertEquals($data['orig_key'], TokenData::originalKey($data['key']));
-
-
+    
     // -------------------------------
     // TokenData instance functions
     // -------------------------------
