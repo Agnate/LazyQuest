@@ -47,7 +47,7 @@ class FormatData extends CacheData {
     $token_names = FormatData::getTokens($format);
 
     // Fetch the TokenData for the found tokens.
-    $tokens = App::filterTokens($token_names);
+    $tokens = App::getTokens($token_names);
 
     // If we do not have the proper amount of tokens, set a logger error.
     if (count($token_names) != count($tokens)) {

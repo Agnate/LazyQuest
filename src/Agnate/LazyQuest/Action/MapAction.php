@@ -39,10 +39,28 @@ class MapAction extends BaseAction {
    * View the map that has been generated.
    */
   protected function performViewMap (Step $step, ActionData $data, ActionState $state) {
-    
+    // Create main text.
     $text[] = "View the map:";
 
-    return Message::reply($text, $data->channel, $data);
+    // Create attachment.
+    $attachment = new Attachment ([
+      'title' => "World map",
+      'callback_id' => $state->callbackID(),
+    ]);
+
+    // TODO: Attach the generated map.
+
+    // Create Map-related buttons.
+    $link_hello = ActionLink::create('hello');
+    $attachment->addButton(AttachmentButton::fromChain(new ActionChain (['actions' => [$link_hello, ActionLink::create('explore')]]), "Explore"));
+    $attachment->addButton(AttachmentButton::fromChain(new ActionChain (['actions' => [$link_hello, ActionLink::create('quest')]]), "Quest"));
+    $attachment->addButton(AttachmentButton::fromChain(new ActionChain (['actions' => [$link_hello]]), "Back"));
+
+    // Create the message.
+    $message = Message::reply($text, $data->channel, $data, FALSE);
+    $message->attachments = array($attachment);
+
+    return $message;
   }
 
 }

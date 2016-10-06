@@ -19,7 +19,8 @@ App::start();
 
 $formats = App::formats();
 d($formats);
-d($formats['test']->random());
+d(App::getFormat('test'));
+d(App::getFormat('town'));
 
 
 // $format = 'This is a [town-name] town with [creature] in it.';

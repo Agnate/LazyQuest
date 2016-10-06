@@ -161,7 +161,7 @@ class Session {
    * Check if the action is a Cancel action.
    * @return Boolean Returns TRUE if action is a Cancel action, FALSE otherwise.
    */
-  protected function isCancelAction (ActionData $data, ActionState $state) {
+  protected function isCancelAction (ActionData $data, $state) {
     if (empty($data)) return FALSE;
 
     // Message cancel buttons will yield this result.

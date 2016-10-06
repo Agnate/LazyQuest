@@ -78,8 +78,10 @@ class App {
   /**
    * List of token names to filter the token list by.
    * @param Array $token_names List of token names (as strings) to get the TokenData for.
+   * @return Array List of token name => TokenData pairs. If an item in the $token_names list could not be found,
+   *    it will not be included in the returned list.
    */
-  public static function filterTokens ($token_names) {
+  public static function getTokens ($token_names) {
     return array_intersect_key(static::tokens(), array_flip($token_names));
   }
 
@@ -108,6 +110,16 @@ class App {
     if (!isset(static::$formats)) static::loadFormats();
 
     return static::$formats;
+  }
+
+  /**
+   * Get the FormatData instance for the format name provided.
+   * @param string $format_name The name of the format to get the FormatData for.
+   * @return FormatData Returns the FormatData instance found, FALSE otherwise.
+   */
+  public static function getFormat ($format_name) {
+    if (!isset(static::$formats[$format_name])) return FALSE;
+    return static::$formats[$format_name];
   }
 
   /**
