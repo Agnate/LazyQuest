@@ -8,6 +8,7 @@ use Kint;
 use Agnate\LazyQuest\App;
 use Agnate\LazyQuest\Data\FormatData;
 
+App::cache()->cache->flush();
 
 App::start();
 
@@ -18,7 +19,7 @@ App::start();
 
 $formats = App::formats();
 d($formats);
-d($formats['town']->random());
+d($formats['test']->random());
 
 
 // $format = 'This is a [town-name] town with [creature] in it.';

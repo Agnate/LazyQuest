@@ -19,9 +19,9 @@ class FormatData extends CacheData {
   }
 
   /**
-   * Get a random format from the list.
+   * Get a RandomData instance of a random generated format from the list.
    * @param boolean $save Whether or not to save the FormatData after generating a random format.
-   * @return string Returns the generated format based on the FormatData settings.
+   * @return RandomData Returns the generated format based on the FormatData settings.
    */
   public function random ($save = TRUE) {
     // Choose a format from the list.
@@ -51,7 +51,7 @@ class FormatData extends CacheData {
 
     // If we do not have the proper amount of tokens, set a logger error.
     if (count($token_names) != count($tokens)) {
-      App::logger()->error("FormatData contains token but no TokenData exists. Format used:\n" . $format . "\n\nTokens found: [" . implode('], [', array_keys($tokens)) . "]");
+      App::logger()->err("FormatData contains token but no TokenData exists.\nFormat used: " . $format . "\nTokens missing: [" . implode('], [', array_diff($token_names, array_keys($tokens))) . "]");
       return FALSE;
     }
 
@@ -62,12 +62,22 @@ class FormatData extends CacheData {
     }
 
     // Replace any tokens in the format.
-    $format = str_replace(array_keys($replacements), array_values($replacements), $format);
+    $replacement_keys = array_keys($replacements);
+    $replacement_values = array_values($replacements);
+    $text = str_replace($replacement_keys, $replacement_values, $format);
+    $stripped = trim(str_replace($replacement_keys, '', $format));
+
 
     // Save this FormatData if requested.
     if ($save) $this->save();
 
-    return $format;
+    $data = new RandomData (array(
+      'text' => $text,
+      'tokens' => $replacement_values,
+      'keywords' => array_merge($replacement_values, array($stripped)),
+    ));
+
+    return $data;
   }
 
 

@@ -24,6 +24,7 @@ class Session {
       ['hi', 'hello', 'hey', 'yo', 'sup', 'howdy', 'hai', 'hay', 'greetings', 'greeting', 'allo', 'salut', 'bonjour', 'konnichiwa', 'ni hao'],
       '\Agnate\LazyQuest\Action\GreetingAction'
     );
+    $this->triggers['map'] = new Trigger (['map'], '\Agnate\LazyQuest\Action\MapAction');
     $this->triggers['register'] = new Trigger (['register'], '\Agnate\LazyQuest\Action\RegisterAction');
   }
 

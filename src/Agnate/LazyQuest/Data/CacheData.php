@@ -186,11 +186,11 @@ class CacheData {
     $data = static::loadJsonFile($filename);
 
     // Save to original.
-    $original = new CacheData (static::originalKey($key), $data);
+    $original = new static (static::originalKey($key), $data);
     if ($save) $original->save();
 
     // Create instance.
-    $instance = new CacheData ($key, $original->compact());
+    $instance = new static ($key, $original->compact());
     $instance->setOriginal($original);
     if ($save) $instance->save();
 
