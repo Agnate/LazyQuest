@@ -4,6 +4,7 @@ namespace Agnate\LazyQuest;
 
 use \Agnate\LazyQuest\Data\FormatData;
 use \Agnate\LazyQuest\Data\TokenData;
+use \Agnate\LazyQuest\Data\WordsData;
 
 class App {
 
@@ -11,6 +12,7 @@ class App {
   protected static $database;
   protected static $logger;
   protected static $cache;
+  protected static $words;
   protected static $tokens;
   protected static $formats;
 
@@ -54,6 +56,9 @@ class App {
     // Initialize the cache.
     static::cache();
 
+    // Load up all the WordsData from JSON files into Cache.
+    static::loadWords();
+
     // Load up all the TokenData from JSON files into Cache.
     static::loadTokens();
 
@@ -64,6 +69,33 @@ class App {
     static::$started = TRUE;
 
     return static::$started;
+  }
+
+  /**
+   * Get the existing words loaded by App.
+   */
+  public static function words () {
+    if (!isset(static::$words)) static::loadWords();
+
+    return static::$words;
+  }
+
+  /**
+   * Load up all the WordsData from JSON files into Cache.
+   */
+  protected static function loadWords () {
+    // Glob all JSON files and store words into the Cache for each file.
+    foreach (glob(GAME_SERVER_ROOT . "/data/words/[!__]*.json") as $filename) {
+      // Scrub the filename.
+      $key = substr($filename, strrpos($filename, '/') + 1, -5);
+
+      // Check if there is already an entry in Cache. No need to add it again if it's there.
+      if (WordsData::isCached($key)) $word = new WordsData ($key);
+      // Create the new WordsData (including the original) and store in Cache.
+      else $word = WordsData::fromJsonFile($key, $filename);
+
+      static::$words[$key] = $word;
+    }
   }
 
   /**

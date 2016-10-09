@@ -1,0 +1,11 @@
+{
+  "format":[
+    "Journey into the [LOCATION]",
+    "Learn about the [LOCATION]",
+    "Enter the [LOCATION]",
+    "Research the [creature] found near [LOCATION]",
+    "Excavate [excavatable] located around [LOCATION]",
+    "Hunt for treasure near [LOCATION]",
+    "Investigate [sighting] at [LOCATION]"
+  ]
+}

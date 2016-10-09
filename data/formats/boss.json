@@ -1,0 +1,6 @@
+{
+  "format":[
+    "[verb-kill] [BOSS-NAME] [boss-suffix] who is [verb-bad-affecting] [noun-innocents] near [LOCATION]",
+    "[verb-prevent] [BOSS-NAME] [boss-suffix] from [verb-demolishing] [destroyable-nature] near [LOCATION]"
+  ]
+}

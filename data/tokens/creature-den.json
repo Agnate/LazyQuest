@@ -1,0 +1,8 @@
+{
+  "join":" ",
+  "parts":[
+    "{creature-adjective}",
+    "{creature-name}",
+    "{creature-home}"
+  ]
+}

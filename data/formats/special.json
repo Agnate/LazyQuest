@@ -1,0 +1,10 @@
+{
+  "format":[
+    "Retrieve the [treasure] in the [LOCATION]",
+    "Gather some [spice] at the [LOCATION]",
+    "Sneak into the [LOCATION] and steal the [treasure]",
+    "Close a magical portal found near [LOCATION]",
+    "Collect the bounty on [name-human] who was spotted near [LOCATION]",
+    "Negotiate a treaty with the [name-human-family] for safe passage through [LOCATION]"
+  ]
+}

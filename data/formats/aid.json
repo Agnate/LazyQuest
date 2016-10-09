@@ -1,0 +1,12 @@
+{
+  "format":[
+    "Help fortify the [LOCATION]",
+    "Bring a shipment of [shipment] to [LOCATION]",
+    "Escort [escortable] to the [LOCATION]",
+    "Accompany [escortable] to the [LOCATION]",
+    "Begin construction on a [gem] mine at the [LOCATION]",
+    "Provide training to [trainable] at [LOCATION]",
+    "Secure [securable] at [LOCATION]",
+    "Dam a flooding river near [LOCATION]"
+  ]
+}

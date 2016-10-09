@@ -1,0 +1,7 @@
+{
+  "join":" ",
+  "parts":[
+    "{location-adjective}",
+    "{location-structure}"
+  ]
+}
