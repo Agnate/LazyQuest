@@ -10,6 +10,18 @@ class TokenData extends CacheData {
   public $parts;
 
   /**
+   * Clone object instances in the $parts list.
+   */
+  function __clone () {
+    if (is_array($this->parts)) {
+      foreach ($this->parts as $key => $part) {
+        if (!is_object($part)) continue;
+        $this->parts[$key] = clone $part;
+      }
+    }
+  }
+
+  /**
    * Set everything to have default values where applicable.
    */
   protected function setDefaults () {
@@ -36,15 +48,20 @@ class TokenData extends CacheData {
       // We only convert string parts into WordsData.
       if (!is_string($part)) continue;
 
+      // See if this string is a WordsData instance token.
+      $words_key = WordsData::getKeyFromToken($part);
+      // Not a token, so we can skip.
+      if ($words_key === FALSE) continue;
+
       // If we can't find a WordsData instance, throw a logger error and replace with empty string.
-      $words_key = WordsData::getKey($part);
       if (!isset($words[$words_key])) {
         App::logger()->err("TokenData contains words but no WordsData exists, replaced with empty string.\nTokenData key: " . $this->key . "\nWords missing: " . $part);
         $this->parts[$key] = '';
+        continue;
       }
 
       // Set the WordsData based on the word key found.
-      $this->parts[$key] = $words[$words_key];
+      $this->parts[$key] = clone ($words[$words_key]);
     }
   }
 
@@ -63,6 +80,18 @@ class TokenData extends CacheData {
     }
 
     return $data;
+  }
+
+  /**
+   * Refresh one of the parts list.
+   * @param int $index The index of the parts list to refresh.
+   */
+  public function refreshPart ($index) {
+    // Perform a clone in case this is a WordsData instance.
+    $parts = $this->original()->parts[$index];
+    if (is_object($parts)) $parts = clone $parts;
+    $this->parts[$index] = $parts;
+    return $this->parts[$index];
   }
 
   /**
@@ -88,8 +117,8 @@ class TokenData extends CacheData {
         
         // Re-index the list as it appears to be empty.
         if ($index === NULL) {
-          // Load up the original to grab the parts.
-          $part = $this->original()->parts[$key];
+          // Refresh the individual part.
+          $part = $this->refreshPart($key);
           $index = array_rand($part);
         }
 

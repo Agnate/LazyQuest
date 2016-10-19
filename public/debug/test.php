@@ -17,10 +17,10 @@ App::start();
 // d($tokens['town-name']->random());
 // d($tokens);
 
-$formats = App::formats();
-d($formats);
-d(App::getFormat('test'));
-d(App::getFormat('town'));
+// $formats = App::formats();
+// d($formats);
+// d(App::getFormat('test'));
+// d(App::getFormat('town'));
 
 
 // $format = 'This is a [town-name] town with [creature] in it.';

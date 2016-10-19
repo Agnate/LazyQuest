@@ -16,7 +16,7 @@ class WordsDataTest extends TestCase {
     // __construct() & properties
     // ---------------------------
     // Also tests extract().
-    // $token = new TokenData ($data['key'], $data['data']);
+    // $token = new TokenData ($data['team'], $data['key'], $data['data']);
     
     // // $join
     // if (isset($data['data']['join'])) $this->assertEquals($data['data']['join'], $token->join);
@@ -31,8 +31,8 @@ class WordsDataTest extends TestCase {
     // TokenData static functions
     // ---------------------------
 
-    // getKey()
-    $this->assertEquals($data['key'], WordsData::getKey($data['token']));
+    // getKeyFromToken()
+    $this->assertEquals($data['key'], WordsData::getKeyFromToken($data['token']));
     
     // -------------------------------
     // TokenData instance functions
@@ -58,7 +58,7 @@ class WordsDataTest extends TestCase {
     // $this->assertContains($token->random(FALSE), $data['random']);
 
     // Set the original data.
-    // $original = new TokenData ($data['orig_key'], $data['data']);
+    // $original = new TokenData ($data['key'], $data['data']);
     // $original->save();
 
     // original()
@@ -81,7 +81,7 @@ class WordsDataTest extends TestCase {
     return [
       'simple words' => [[
         'key' => 'wordsdata_words1',
-        'orig_key' => 'wordsdata_words1_ORIG',
+        'team' => 'teamtest1',
         'token' => '{wordsdata_words1}',
         'data' => array(),
         'compact' => array('list' => array()),

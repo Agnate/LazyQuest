@@ -2,6 +2,8 @@
 
 namespace Agnate\LazyQuest;
 
+use \Agnate\LazyQuest\Team;
+use \Agnate\LazyQuest\Data\CacheData;
 use \Agnate\LazyQuest\Data\FormatData;
 use \Agnate\LazyQuest\Data\TokenData;
 use \Agnate\LazyQuest\Data\WordsData;
@@ -15,6 +17,7 @@ class App {
   protected static $words;
   protected static $tokens;
   protected static $formats;
+  protected static $teams;
 
   protected static $logger_table = 'logs';
   protected static $logger_primary_key = 'log_id';
@@ -56,6 +59,22 @@ class App {
     // Initialize the cache.
     static::cache();
 
+    // Set App to started.
+    static::$started = TRUE;
+
+    // Load all other data.
+    static::load();
+
+    return static::$started;
+  }
+
+  /**
+   * Load up any other data the App needs.
+   */
+  protected static function load () {
+    // Load all Slack teams.
+    static::loadTeams();
+
     // Load up all the WordsData from JSON files into Cache.
     static::loadWords();
 
@@ -64,11 +83,50 @@ class App {
 
     // Load up all the FormatData from JSON files into Cache.
     static::loadFormats();
+  }
 
-    // Set App to started.
-    static::$started = TRUE;
+  /**
+   * Load all the teams.
+   */
+  protected static function loadTeams () {
+    static::$teams = Team::loadMultiple([]);
+  }
 
-    return static::$started;
+  /**
+   * Load cache data from JSON files.
+   * @param string $directory The path of the directory inside the /data folder. Example: for /data/words, use: "words".
+   * @param Array $destination The list to store the cache items into.
+   * @param string $class The class name to load the data into. MUST implement CacheData class. Default is \Agnate\LazyQuest\Data\CacheData.
+   */
+  protected static function loadCacheData ($directory, &$destination, $class = '\Agnate\LazyQuest\Data\CacheData') {
+    // Load teams if they have not been loaded.
+    static::loadTeams();
+
+    // Glob all JSON files and store words into the Cache for each file.
+    foreach (glob(GAME_SERVER_ROOT . "/data/" . $directory . "/[!__]*.json") as $filename) {
+      // Scrub the filename.
+      $key = substr($filename, strrpos($filename, '/') + 1, -5);
+
+      // If the original exists, load it.
+      if ($class::isCached(NULL, $key)) $original = new $class (NULL, $key);
+      else $original = $class::fromJsonFile(NULL, $key, $filename);
+
+      // Save original to list.
+      $destination[$original->key()] = $original;
+
+      // Create a cache instance for each team.
+      foreach (static::$teams as $team) {
+        $team_id = $team->team_id;
+
+        // Check if there is already an entry in Cache. No need to add it again if it's there.
+        if ($class::isCached($team_id, $key)) $cache = new $class ($team_id, $key);
+        // Create the new CacheData (including the original) and store in Cache.
+        else $cache = $class::fromOriginal($original, $team_id);
+
+        // Add to cache list.
+        $destination[$cache->key()] = $cache;
+      }
+    }
   }
 
   /**
@@ -84,18 +142,8 @@ class App {
    * Load up all the WordsData from JSON files into Cache.
    */
   protected static function loadWords () {
-    // Glob all JSON files and store words into the Cache for each file.
-    foreach (glob(GAME_SERVER_ROOT . "/data/words/[!__]*.json") as $filename) {
-      // Scrub the filename.
-      $key = substr($filename, strrpos($filename, '/') + 1, -5);
-
-      // Check if there is already an entry in Cache. No need to add it again if it's there.
-      if (WordsData::isCached($key)) $word = new WordsData ($key);
-      // Create the new WordsData (including the original) and store in Cache.
-      else $word = WordsData::fromJsonFile($key, $filename);
-
-      static::$words[$key] = $word;
-    }
+    // Load JSON files and store words into the Cache for each file.
+    static::loadCacheData("words", static::$words, "\Agnate\LazyQuest\Data\WordsData");
   }
 
   /**
@@ -121,18 +169,8 @@ class App {
    * Load up all the TokenData from JSON files into Cache.
    */
   protected static function loadTokens () {
-    // Glob all JSON files and store randomization tokens into the Cache for each file.
-    foreach (glob(GAME_SERVER_ROOT . "/data/tokens/[!__]*.json") as $filename) {
-      // Scrub the filename.
-      $key = substr($filename, strrpos($filename, '/') + 1, -5);
-
-      // Check if there is already an entry in Cache. No need to add it again if it's there.
-      if (TokenData::isCached($key)) $token = new TokenData ($key);
-      // Create the new TokenData (including the original) and store in Cache.
-      else $token = TokenData::fromJsonFile($key, $filename);
-
-      static::$tokens[$key] = $token;
-    }
+    // Load JSON files and store randomization tokens into the Cache for each file.
+    static::loadCacheData("tokens", static::$tokens, "\Agnate\LazyQuest\Data\TokenData");
   }
 
   /**
@@ -158,18 +196,8 @@ class App {
    * Load up all the FormatData from JSON files into Cache.
    */
   protected static function loadFormats () {
-    // Glob all JSON files and store randomization formats into the Cache for each file.
-    foreach (glob(GAME_SERVER_ROOT . "/data/formats/[!__]*.json") as $filename) {
-      // Scrub the filename.
-      $key = substr($filename, strrpos($filename, '/') + 1, -5);
-
-      // Check if there is already an entry in Cache. No need to add it again if it's there.
-      if (FormatData::isCached($key)) $format = new FormatData ($key);
-      // Create the new FormatData (including the original) and store in Cache.
-      else $format = FormatData::fromJsonFile($key, $filename);
-
-      static::$formats[$key] = $format;
-    }
+    // Load JSON files and store randomization formats into the Cache for each file.
+    static::loadCacheData("formats", static::$formats, "\Agnate\LazyQuest\Data\FormatData");
   }
 
   /**

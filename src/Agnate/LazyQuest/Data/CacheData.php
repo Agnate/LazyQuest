@@ -6,26 +6,36 @@ use \Agnate\LazyQuest\App;
 
 class CacheData {
 
+  public $team; // Should contain the team Slack ID.
   public $key;
   public $raw;
 
   protected $_original; // Contains an instance of CacheData with original data.
 
   // Keys to exclude when storing in cache.
-  static $exclude = array('key', 'raw');
+  static $exclude = array('team', 'key', 'raw');
 
   /**
    * Create cache data to store and fetch from cache.
+   * @param string $team Team ID to store cache data against. For original data, leave blank (either NULL or empty string).
    * @param string $key Key used to store cache data in the cache.
    * @param * $data The data for this instance. If not provided, it will be loaded from the cache.
    */
-  function __construct ($key, $data = NULL) {
+  function __construct ($team, $key, $data = NULL) {
     // Set the key for this cache.
+    $this->team = $team;
     $this->key = $key;
 
-    // If default data isn't provided, load it from 
+    // If default data isn't provided, load it from cache.
     if ($data === NULL) $this->load();
     else $this->extract($data);
+  }
+
+  /**
+   * Get the cache key. This is a combination of the team slack ID and key.
+   */
+  public function key () {
+    return static::getKey($this->team, $this->key);
   }
 
   /**
@@ -41,7 +51,7 @@ class CacheData {
    */
   public function save () {
     // Convert to array for storage.
-    return App::cache()->save($this->key, $this->compact());
+    return App::cache()->save($this->key(), $this->compact());
   }
 
   /**
@@ -50,13 +60,11 @@ class CacheData {
    */
   public function load () {
     // Load data from cache.
-    $data = App::cache()->load($this->key);
-
-    // Set defaults.
-    $this->setDefaults();
+    $data = App::cache()->load($this->key());
+    if ($data === FALSE) $data = NULL;
 
     // Extract data from data.
-    if ($data !== FALSE) $this->extract($data);
+    $this->extract($data);
 
     return $this;
   }
@@ -66,7 +74,7 @@ class CacheData {
    * @return CacheData Returns the instance of CacheData containing the original data.
    */
   public function original () {
-    if (!isset($this->_original)) $this->_original = new static (static::originalKey($this->key));
+    if (!isset($this->_original)) $this->_original = new static (NULL, $this->key);
     return $this->_original;
   }
 
@@ -77,7 +85,7 @@ class CacheData {
    */
   public function setOriginal ($original) {
     // Make sure the keys match.
-    if (static::originalKey($this->key) != $original->key) return FALSE;
+    if ($this->key != $original->key) return FALSE;
 
     $this->_original = $original;
 
@@ -160,41 +168,60 @@ class CacheData {
   */
 
   /**
-   * Get the name of the original key based on the current one.
-   * @param string $key The current key.
-   * @return string Returns the original key name.
+   * Get the cache key.
+   * @param string $team Team ID. For original data, leave empty (use either NULL or empty string).
+   * @param string $key Key used to store cache data in the cache.
+   * @return string Returns the cache key name for this team (or Original cache data if $team is empty).
    */
-  public static function originalKey ($key) {
-    return $key . '_ORIG';
+  public static function getKey ($team, $key) {
+    return (!empty($team) ? $team . '_' : '') . $key;
   }
 
   /**
    * Check if this key and it's original key both have a Cache entry.
+   * @param string $team Team ID. Use NULL or empty string to test Original cache.
    * @param string $key The key to check if a Cache exists for.
    * @return boolean Returns TRUE if the Cache exists, FALSE otherwise.
    */
-  public static function isCached ($key) {
-    return (App::cache()->load($key) !== FALSE && App::cache()->load(static::originalKey($key)) !== FALSE);
+  public static function isCached ($team, $key) {
+    return (App::cache()->load(static::getKey($team, $key)) !== FALSE);
   }
 
   /**
-   * Load CacheData from a JSON file.
-   * @return CacheData Return an instance of CacheData after loading original data from JSON file and saving to Cache.
+   * Create a CacheData instance based on the original.
+   * @param CacheData $original An instance of the original CacheData.
+   * @param string $team Team ID.
+   * @param boolean $save Whether or not to immediately save new cache instance. Defaults to TRUE.
+   * @return CacheData Return an instance of CacheData that is a clone of its original.
    */
-  public static function fromJsonFile ($key, $filename, $save = TRUE) {
-    // Load file.
-    $data = static::loadJsonFile($filename);
-
-    // Save to original.
-    $original = new static (static::originalKey($key), $data);
-    if ($save) $original->save();
-
+  public static function fromOriginal ($original, $team, $save = TRUE) {
     // Create instance.
-    $instance = new static ($key, $original->compact());
+    $instance = new static ($team, $original->key, $original->compact());
     $instance->setOriginal($original);
     if ($save) $instance->save();
 
     return $instance;
+  }
+
+  /**
+   * Load CacheData from a JSON file.
+   * @param string $team Team ID.
+   * @param string $key The cache key.
+   * @param string $filename The name of the local file to load. File MUST be in the GAME_SERVER_ROOT directory.
+   * @param boolean $save Whether or not to immediately save new cache instance. Defaults to TRUE.
+   * @return CacheData Return an instance of CacheData after loading original data from JSON file and saving to Cache.
+   */
+  public static function fromJsonFile ($team, $key, $filename, $save = TRUE) {
+    // Load file.
+    $data = static::loadJsonFile($filename);
+
+    // Save to original.
+    $original = new static (NULL, $key, $data);
+    if ($save) $original->save();
+
+    // Create team-specific instance if $team is given.
+    if (empty($team)) return $original;
+    else return static::fromOriginal($original, $team);
   }
 
   /**

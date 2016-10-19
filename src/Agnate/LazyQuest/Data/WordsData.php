@@ -73,7 +73,7 @@ class WordsData extends CacheData {
    * Get the WordsData key based on the words token used. Example: {creature-adjectives}
    * @param string $token The token to convert into the key. Example: {creature-adjectives}
    */
-  public static function getKey ($token) {
+  public static function getKeyFromToken ($token) {
     if (substr($token, 0, 1) != "{") return FALSE;
     if (substr($token, -1) != "}") return FALSE;
     return substr($token, 1, -1);

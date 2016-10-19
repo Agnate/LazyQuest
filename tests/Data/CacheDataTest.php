@@ -17,10 +17,13 @@ class CacheDataTest extends TestCase {
     // __construct() & properties
     // ---------------------------
     // Also tests extract().
-    $cache = new CacheData ($data['key'], $data['data']);
+    $cache = new CacheData ($data['team'], $data['key'], $data['data']);
     
     // $key
     $this->assertEquals($data['key'], $cache->key);
+
+    // $team
+    $this->assertEquals($data['team'], $cache->team);
     
     // $raw
     $this->assertEquals($data['data'], $cache->raw);
@@ -30,9 +33,7 @@ class CacheDataTest extends TestCase {
     // CacheData static functions
     // ---------------------------
 
-    // originalKey()
-    $this->assertEquals($data['orig_key'], CacheData::originalKey($data['key']));
-
+    
 
     // -------------------------------
     // CacheData instance functions
@@ -55,7 +56,7 @@ class CacheDataTest extends TestCase {
     else $this->assertEquals($data['data'], $compact);
 
     // Set the original data.
-    $original = new CacheData ($data['orig_key'], $data['data']);
+    $original = new CacheData (NULL, $data['key'], $data['data']);
     $original->save();
 
     // original()
@@ -76,19 +77,19 @@ class CacheDataTest extends TestCase {
     return [
       'array cache' => [[
         'key' => 'cachedata_test1',
-        'orig_key' => 'cachedata_test1_ORIG',
+        'team' => 'teamtest1',
         'data' => array(),
       ]],
 
       'stdClass cache' => [[
         'key' => 'cachedata_test2',
-        'orig_key' => 'cachedata_test2_ORIG',
+        'team' => 'teamtest2',
         'data' => new stdClass,
       ]],
 
       'string cache' => [[
         'key' => 'cachedata_test3',
-        'orig_key' => 'cachedata_test3_ORIG',
+        'team' => 'teamtest3',
         'data' => 'cache tester',
       ]],
 

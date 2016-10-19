@@ -16,8 +16,8 @@ class TokenDataTest extends TestCase {
     // __construct() & properties
     // ---------------------------
     // Also tests extract().
-    $token = new TokenData ($data['key'], $data['data']);
-    
+    $token = new TokenData ($data['team'], $data['key'], $data['data']);
+
     // $join
     if (isset($data['data']['join'])) $this->assertEquals($data['data']['join'], $token->join);
     else $this->assertEquals('', $token->join);
@@ -56,7 +56,7 @@ class TokenDataTest extends TestCase {
     $this->assertContains($token->random(FALSE), $data['random']);
 
     // Set the original data.
-    $original = new TokenData ($data['orig_key'], $data['data']);
+    $original = new TokenData (NULL, $data['key'], $data['data']);
     $original->save();
 
     // original()
@@ -79,7 +79,7 @@ class TokenDataTest extends TestCase {
     return [
       'simple token' => [[
         'key' => 'tokendata_test1',
-        'orig_key' => 'tokendata_test1_ORIG',
+        'team' => 'teamtest1',
         'data' => array(),
         'compact' => array('join' => '', 'parts' => array()),
         'random' => array(''),
@@ -87,7 +87,7 @@ class TokenDataTest extends TestCase {
 
       'partial token' => [[
         'key' => 'tokendata_test2',
-        'orig_key' => 'tokendata_test2_ORIG',
+        'team' => 'teamtest2',
         'data' => array('parts' => array('a')),
         'compact' => array('join' => '', 'parts' => array('a')),
         'random' => array('a'),
@@ -95,7 +95,7 @@ class TokenDataTest extends TestCase {
 
       'full token' => [[
         'key' => 'tokendata_test3',
-        'orig_key' => 'tokendata_test3_ORIG',
+        'team' => 'teamtest3',
         'data' => array('join' => '-', 'parts' => array('a', array('b1', 'b2'))),
         'random' => array('a-b1', 'a-b2'),
       ]],
