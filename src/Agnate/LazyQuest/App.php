@@ -297,4 +297,38 @@ class App {
 
     return preg_replace(array_keys($info), array_values($info), $string);
   }
+
+  /**
+   * Get the time as a micro amount and float.
+   * @return float Returns the microtime as a float.
+   */
+  public static function microtimeFloat () {
+    list($usec, $sec) = explode(" ", microtime());
+    return ((float)$usec + (float)$sec);
+  }
+
+  /**
+   * Get the absolute server directory for this path.
+   * @param string $path The path to look for. Example: `/sprites/raw`
+   * @param boolean $public Whether or not the file is in the public directory.
+   * @return string Returns the absolute server directory path.
+   */
+  public static function getPath ($path, $public = FALSE) {
+    // Add the directory separator if it doesn't exist.
+    if (substr($path, 0, 1) != DIRECTORY_SEPARATOR) $path = DIRECTORY_SEPARATOR . $path;
+    // If it's a public path, use the public directory, otherwise use the game server root.
+    return ($public ? GAME_SERVER_PUBLIC_DIR : GAME_SERVER_ROOT) . $path;
+  }
+
+  /**
+   * Get the public URL for a path. Public means that the general population can access
+   * this file (if it exists).
+   * @param string $path The path to look for. Example: `/images/map.png`
+   * @return string Returns the public URL for the path.
+   */
+  public static function getPublicUrl ($path) {
+    // Strip out the public path if it exists.
+    if (strpos($path, GAME_SERVER_PUBLIC_DIR) === 0) $path = substr($path, strlen(GAME_SERVER_PUBLIC_DIR));
+    return $path;
+  }
 }

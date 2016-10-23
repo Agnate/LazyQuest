@@ -54,6 +54,7 @@ class MapAction extends BaseAction {
     $link_hello = ActionLink::create('hello');
     $attachment->addButton(AttachmentButton::fromChain(new ActionChain (['actions' => [$link_hello, ActionLink::create('explore')]]), "Explore"));
     $attachment->addButton(AttachmentButton::fromChain(new ActionChain (['actions' => [$link_hello, ActionLink::create('quest')]]), "Quest"));
+    $attachment->addButton(AttachmentButton::fromChain(new ActionChain (['actions' => [$link_hello, ActionLink::create('excavate')]]), "Excavate"));
     $attachment->addButton(AttachmentButton::fromChain(new ActionChain (['actions' => [$link_hello]]), "Back"));
 
     // Create the message.
