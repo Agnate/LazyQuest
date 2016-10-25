@@ -134,6 +134,9 @@ class SpriteSheet {
    * identify the row and column to create new icons.
    */
   public static function addGridToSheet ($local_url, $debug = FALSE) {
+    // Check if the file exists.
+    if (!file_exists(static::url($local_url))) return FALSE;
+
     // Create a list of all currently-used tiles.
     $all = static::getRawSpriteCoordinates();
     $all_tiles = array();
@@ -210,8 +213,8 @@ class SpriteSheet {
 
     // If we're debugging, also output to the public area.
     if ($debug) {
-      $debug_url = App::getPath(GAME_SPRITESHEET_DEBUG_RAW_DIR, TRUE) . $local_url;
-      $debug_file_path = App::getPublicUrl($debug_url);
+      $debug_file_path = GAME_SPRITESHEET_DEBUG_ALTERED_DIR . $local_url;
+      $debug_url = App::getPublicUrl($debug_file_path);
       imagepng($image, $debug_file_path);
       $urls['debug'] = $debug_url;
     }
