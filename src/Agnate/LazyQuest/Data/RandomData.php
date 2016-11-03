@@ -10,4 +10,6 @@ class RandomData extends EntityBasic {
   public $keywords;
   public $tokens;
 
+  static $fields_array = array('keywords', 'tokens');
+
 }

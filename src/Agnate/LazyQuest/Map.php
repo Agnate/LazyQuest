@@ -23,7 +23,7 @@ class Map extends Entity {
   static $fields_int = array('created');
   static $fields_array;
 
-  const DENSITY = 0.15; // Percentage of Locations that are significant
+  const DENSITY = 0.15; // Percentage of Locations that are not empty.
   const CAPITAL_START_ROW = 100;
   const CAPITAL_START_COL = 81;
   const MIN_ROWS = 5; // 5
@@ -80,9 +80,6 @@ class Map extends Entity {
    * @return Array Returns a list of Location instances generated for this Map.
    */
   public function generateLocations ($save_locations = TRUE) {
-    $json = Location::loadLocationNamesList();
-    $original_json = Location::loadLocationNamesList(TRUE);
-
     $locations = array();
 
     $info = [
@@ -137,7 +134,7 @@ class Map extends Entity {
       $coord = $open[$open_index];
       unset($open[$open_index]);
       // Generate the location.
-      $location = Location::randomLocation($this, $coord['row'], $coord['col'], NULL, $json, $original_json, FALSE);
+      $location = Location::randomLocation($this, $coord['row'], $coord['col'], NULL, FALSE);
       // If we're not saving the location, it means we need to manually assign the star rating (so we can pass in the unsaved Capital).
       $location->assignStarRating($capital);
       if ($save_locations) $location->save();
@@ -150,7 +147,7 @@ class Map extends Entity {
     // Fill the rest of the map with empty locations.
     foreach ($open as $coord) {
       // Generate the location.
-      $location = Location::randomLocation($this, $coord['row'], $coord['col'], Location::TYPE_EMPTY, $json, $original_json, $save_locations);
+      $location = Location::randomLocation($this, $coord['row'], $coord['col'], Location::TYPE_EMPTY, $save_locations);
       // if ($save_locations) $location->save();
       $grid[$coord['row']][$coord['col']] = $location;
       $locations[] = $location;

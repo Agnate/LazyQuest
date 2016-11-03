@@ -6,6 +6,7 @@ class Location extends Entity {
 
   public $locid;
   public $map_id;
+  public $team_id;
   public $guild_id; // Guild who revealed it.
   public $name;
   public $row;
@@ -28,6 +29,7 @@ class Location extends Entity {
   static $primary_key = 'locid';
   static $relationships = array(
     'map_id' => '\Agnate\LazyQuest\Map',
+    'team_id' => '\Agnate\LazyQuest\Team',
     'guild_id' => '\Agnate\LazyQuest\Guild',
   );
   static $fields_serialize;
@@ -36,9 +38,6 @@ class Location extends Entity {
   static $fields_array;
 
   static $_types = array(Location::TYPE_DOMICILE, Location::TYPE_CREATURE, Location::TYPE_STRUCTURE, Location::TYPE_LANDMARK);
-
-  const FILENAME_LIST_ORIGINAL = '/data/json/original/location_names.json';
-  const FILENAME_LIST = '/data/json/location_names.json';
 
   // Used to calculate the exp/tile and represents the tile to travel 1 tile on the map.
   const TRAVEL_BASE_CALC_VALUE = 2700; // 2700 = 45 mins/tile (60 * 45)
@@ -217,9 +216,8 @@ class Location extends Entity {
   /**
    * Get Location instances that are adjacent to this Location (North, South, East, and West).
    * @param Boolean $create_new Set to TRUE if you want to create new Location instances for NSEW spots that do not exist yet, FALSE otherwise.
-   * @param JSONList $json Instance of JSONList containing names.
    */
-  public function getAdjacentLocations ($create_new = FALSE, &$json = NULL, $original_json = NULL, $save_new = TRUE) {
+  public function getAdjacentLocations ($create_new = FALSE, $save_new = TRUE) {
     $row = $this->row;
     $col = $this->col;
     $locations = array();
@@ -252,7 +250,7 @@ class Location extends Entity {
         $type = Location::TYPE_EMPTY;
         // Generate a random non-empty type if we randomize the density and get a non-empty location.
         if (rand(0, 100) <= (Map::DENSITY * 100)) $type = NULL;
-        $location = Location::randomLocation($map, $data['row'], $data['col'], $type, $json, $original_json, $save_new);
+        $location = Location::randomLocation($map, $data['row'], $data['col'], $type, $save_new);
       }
 
       $locations[] = $location;
@@ -317,6 +315,38 @@ class Location extends Entity {
     return ceil(($rates['star'.$star] * $hours_ratio) * $distance);
   }
 
+  /**
+   * Generate a name for this Location (based on its type).
+   * @return RandomData Returns the RandomData generated for the name if successful, FALSE otherwise.
+   */
+  public function generateName () {
+    // Empty locations are just blank.
+    if ($this->type == Location::TYPE_EMPTY) return new RandomData (['text' => '']);
+
+    // Get the FormatData based on Location $type.
+    $team = $this->getRelationship('team_id');
+    $format = new FormatData ($team->team_id, $this->formatKey());
+
+    if (empty($format)) return FALSE;
+
+    // Get a random name based on the format.
+    $random = $format->random();
+
+    if (empty($random)) return FALSE;
+
+    // Update this Location with the information.
+    $this->name = $random->text;
+    $this->keywords = $random->keywords;
+
+    return $random;
+  }
+
+  /**
+   * Get the FormatData key based on this Location.
+   */
+  public function formatKey () {
+    return 'location-' . $this->type;
+  }
 
   /* =================================
      ______________  ________________
@@ -381,37 +411,27 @@ class Location extends Entity {
    * @param int $col The column number on the map for this Location's coordinates.
    * @return Location Returns a new Location instance for the provided Map, row, and column.
    */
-  public static function randomLocation (Map $map, $row, $col, $type = NULL, &$json = NULL, $original_json = NULL, $save = TRUE) {
+  public static function randomLocation (Map $map, $row, $col, $type = NULL, $save = TRUE) {
     // Randomize type.
     if (empty($type)) {
       $types = Location::types();
       $type = $types[array_rand($types)];
     }
 
-    // Get name and keywords.
-    $name = '';
-    $keywords = array();
-    if ($type != Location::TYPE_EMPTY) {
-      $name_keywords = Location::generateName($type, $json, $original_json);
-      $name = $name_keywords['name'];
-      $keywords = $name_keywords['keywords'];
-    }
-
     // Create location.
-    $location_data = array(
+    $location = new Location ([
       'mapid' => $map->mapid,
       'gid' => 0,
-      'name' => $name,
       'row' => $row,
       'col' => $col,
       'type' => $type,
       'created' => time(),
-      'revealed' => false,
-      'open' => false,
-      'keywords' => $keywords,
-    );
+      'revealed' => FALSE,
+      'open' => FALSE,
+    ]);
 
-    $location = new Location ($location_data);
+    // Generate the name.
+    $location->generateName();
 
     // Assign star rating based on proximity to the Capital.
     $location->assignStarRating();
@@ -422,119 +442,41 @@ class Location extends Entity {
   }
 
   /**
-   * Generate a name based on the Location type.
-   * @param string $type The Location type. Use one of the constants defined in Location.
+   * Get all unique location names.
+   * @param Team $team The team to get location names for.
+   * @param boolean $revealed_only Whether or not to get only the revealed locations.
    */
-  public static function generateName ($type, &$json = NULL, $original_json = NULL) {
-    // Empty locations are just blank.
-    $info = [
-      'name' => '',
-      'keywords' => array(),
-    ];
-    if ($type == Location::TYPE_EMPTY) return $info;
-
-    // Load up the list of location names.
-    $save_json = empty($json);
-    if (empty($json)) $json = Location::loadLocationNamesList();
-    if (empty($original_json)) $original_json = Location::loadLocationNamesList(true);
-
-    // Get the JSON for this location type.
-    $json_list =& $json[$type];
-    $original_json_list = $original_json[$type];
-
-    // Randomly generate the name.
-    $info = JSONList::generateName($json_list, $original_json_list);
-
-    // If we're supposed to save the JSON, do so now.
-    if ($save_json) Location::saveLocationNamesList($json);
-
-    return $info;
+  public static function getAllUniqueLocations ($team, $revealed_only = TRUE) {
+    // Get the current season.
+    $season = Season::current();
+    if (empty($season)) return FALSE;
+    $map = $season->getMap();
+    
+    // Get list of all locations.
+    $types = Location::types();
+    $data = ['mapid' => $map->mapid, 'type' => $types];
+    if ($revealed_only) $data['revealed'] = TRUE;
+    return Location::loadMultiple($data);
   }
 
+  /**
+   * Sort a list of Location instances based on star rating.
+   * @param Array $locations A list of Location instances to sort.
+   * @return Array Returns a list of sorted Location instances.
+   */
+  public static function sortLocationsByStar ($locations) {
+    // Sort out locations by star-rating.
+    $all_locations = array('all' => $locations);
+    foreach ($locations as &$location) {
+      for ($star = $location->star_min; $star <= $location->star_max; $star++) {
+        if ($star == 0) continue;
+        if (!isset($all_locations[$star])) $all_locations[$star] = array();
+        $all_locations[$star]['loc'.$location->locid] = $location;
+      }
+    }
 
-  // protected static function generate_from_parts (&$parts, $original_parts) {
-  //   if (is_string($parts)) return $parts;
-  //   if (!is_array($parts)) return '';
-
-  //   // If there are arrays for each part, randomly pick one.
-  //   $name = array();
-  //   foreach ($parts as $key => &$list) {
-  //     if (is_array($list)) {
-  //       $index = array_rand($list);
-  //       // Re-index
-  //       if ($index === NULL) {
-  //         $list = $original_parts[$key];
-  //         $index = array_rand($list);
-  //       }
-  //       $name[] = $list[$index];
-  //       unset($list[$index]);
-  //     }
-  //     else if (is_string($list)) $name[] = $list;
-  //   }
-
-  //   return $name;
-  // }
-
-  // public static function get_all_unique_locations ($revealed_only = true) {
-  //   // Get the current season.
-  //   $season = Season::current();
-  //   if (empty($season)) return FALSE;
-  //   $map = $season->get_map();
-    
-  //   // Get list of all locations.
-  //   $types = Location::types();
-  //   $data = array('mapid' => $map->mapid, 'type' => $types);
-  //   if ($revealed_only) $data['revealed'] = true;
-  //   return Location::load_multiple($data);
-  // }
-
-  // public static function sort_locations_by_star ($locations) {
-  //   // Sort out locations by star-rating.
-  //   $all_locations = array('all' => $locations);
-  //   foreach ($locations as &$location) {
-  //     for ($star = $location->star_min; $star <= $location->star_max; $star++) {
-  //       if ($star == 0) continue;
-  //       if (!isset($all_locations[$star])) $all_locations[$star] = array();
-  //       $all_locations[$star]['loc'.$location->locid] = $location;
-  //     }
-  //   }
-
-  //   return $all_locations;
-  // }
-
-  // /**
-  //  * Load up the list of location names that are still available.
-  //  */
-  // public static function load_location_names_list ($original = false) {
-  //   $file_name = RPG_SERVER_ROOT .($original ? Location::FILENAME_LIST_ORIGINAL : Location::FILENAME_LIST);
-  //   $names_json_string = file_get_contents($file_name);
-  //   return json_decode($names_json_string, true);
-  // }
-
-  // /**
-  //  * $data -> An array that can be properly encoded using PHP's json_encode function.
-  //  */
-  // public static function save_location_names_list ($data) {
-  //   // Write out the JSON file to prevent names from being reused.
-  //   $fp = fopen(RPG_SERVER_ROOT . Location::FILENAME_LIST, 'w');
-  //   fwrite($fp, json_encode($data));
-  //   fclose($fp);
-  // }
-
-  // /**
-  //  * Replace the working location names list with a copy of the original.
-  //  */
-  // public static function refresh_original_location_names_list () {
-  //   // Load the original JSON list.
-  //   $json = Location::load_location_names_list(true);
-
-  //   // Overwrite the working copy with the new list.
-  //   Location::save_location_names_list($json);
-
-  //   return $json;
-  // }
-
-
+    return $all_locations;
+  }
 
   /**
    * Calculate the distance between two Location instances. Since Location instances are in a grid and a Location occupies one grid tile,

@@ -2,12 +2,17 @@
 
 namespace Agnate\LazyQuest;
 
+use \Agnate\LazyQuest\App;
+use \Agnate\LazyQuest\Location;
+use \Agnate\LazyQuest\Map;
+use \Agnate\LazyQuest\Image\MapImage;
+
 class Season extends Entity {
 
   public $sid;
   public $created;
-  public $duration;
   public $active;
+  public $team_id;
 
   protected $_map;
   
@@ -16,8 +21,10 @@ class Season extends Entity {
   static $default_class = '\Agnate\LazyQuest\Season';
   static $primary_key = 'sid';
   static $partials = array();
-  static $relationships = array();
-  static $fields_int = array('created', 'duration');
+  static $relationships = array(
+    'team_id' => '\Agnate\LazyQuest\Team',
+  );
+  static $fields_int = array('created');
   static $fields_array = array();
 
 
@@ -50,11 +57,67 @@ class Season extends Entity {
   ==================================== */
 
   /**
-   * Get the current season.
+   * Get the current Season.
+   * @param Team $team The Team to get the current Season for.
    * @return Season Returns a Season instance of the current active Season.
    */
-  public static function current () {
-    return Season::load(array('active' => TRUE));
+  public static function current ($team) {
+    return Season::load(['active' => TRUE, 'team_id' => $team->tid]);
+  }
+
+  /**
+   * Start a new season for a team.
+   * @param Team $team The team to start a new season for.
+   * @return Season Returns the Season instance if a new season was successfully created, FALSE otherwise.
+   */
+  public static function startNewSeason ($team) {
+    // TODO: Remove old season information.
+    // TODO: Remove all queues, action states, etc. for team.
+
+    $time = time();
+    // $hours = 60 * 60;
+    // $days = $hours * 24;
+
+    // Start new Season instance.
+    $season = new Season ([
+      'created' => $time,
+      'active' => FALSE,
+      'team_id' => $team->tid,
+    ]);
+
+    if (!($season->save())) {
+      App::logger()->notice('Season::startNewSeason > Failed to save new Season for Team ' . $team->team_id);
+      return FALSE;
+    }
+
+    // Create new Map instance.
+    $map = new Map ([
+      'season' => $season->sid,
+      'created' => $time,
+    ]);
+
+    if (!($map->save())) {
+      App::logger()->notice('Season::startNewSeason > Failed to save new Map for Team ' . $team->team_id);
+      return FALSE;
+    }
+
+    // Generate Map locations.
+    $locations = $map->generateLocations();
+
+    // Activate Season.
+    $season->active = TRUE;
+    $season->save();
+
+    if (!($season->save())) {
+      App::logger()->notice('Season::startNewSeason > Failed to activate Season for Team ' . $team->team_id);
+      return FALSE;
+    }
+
+    // Generate initial MapImage.
+    $mapimage = MapImage::generateImage($map);
+
+    // Looks like we're done, so return the Season created.
+    return $season;
   }
 
 }
