@@ -183,6 +183,7 @@ class MapImage extends EntityBasic {
     // Output the image.
     $image_url = GAME_MAP_IMAGE_PATH;
     $file_path = App::getPath($image_url, TRUE);
+    d($file_path);
     // imagepng($resized, $file_path);
     imagepng($image, $file_path);
 

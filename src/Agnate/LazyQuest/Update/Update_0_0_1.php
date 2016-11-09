@@ -6,6 +6,8 @@ use Agnate\LazyQuest\ActionState;
 use Agnate\LazyQuest\Guild;
 use Agnate\LazyQuest\Season;
 use Agnate\LazyQuest\Team;
+use Agnate\LazyQuest\Map;
+use Agnate\LazyQuest\Location;
 
 class Update_0_0_1 extends UpdateBase {
 
@@ -20,7 +22,7 @@ class Update_0_0_1 extends UpdateBase {
   public static function run($forced = TRUE) {
     $queries = array();
 
-    // Create tables for Team.
+    // Create table for Team.
     $fields = array();
     $fields[] = "tid INT(11) UNSIGNED AUTO_INCREMENT";
     $fields[] = "team_id VARCHAR(255) NOT NULL";
@@ -29,7 +31,7 @@ class Update_0_0_1 extends UpdateBase {
     $fields[] = "bot_access_token VARCHAR(255) NOT NULL";
     $queries[] = static::createTableStatement(Team::$db_table, Team::$primary_key, $fields);
 
-    // Create tables for Guild.
+    // Create table for Guild.
     $fields = array();
     $fields[] = "gid INT(11) UNSIGNED AUTO_INCREMENT";
     $fields[] = "slack_id VARCHAR(255) NOT NULL";
@@ -39,15 +41,15 @@ class Update_0_0_1 extends UpdateBase {
     $fields[] = "team_id INT(11) NOT NULL";
     $queries[] = static::createTableStatement(Guild::$db_table, Guild::$primary_key, $fields);
 
-    // Create tables for Season.
+    // Create table for Season.
     $fields = array();
     $fields[] = "sid INT(11) UNSIGNED AUTO_INCREMENT";
     $fields[] = "created INT(11) NOT NULL";
-    $fields[] = "duration INT(11) NOT NULL";
     $fields[] = "active TINYINT(1) NOT NULL";
+    $fields[] = "team_id INT(11) NOT NULL";
     $queries[] = static::createTableStatement(Season::$db_table, Season::$primary_key, $fields);
 
-    // Create tables for ActionState.
+    // Create table for ActionState.
     $fields = array();
     $fields[] = "asid INT(11) UNSIGNED AUTO_INCREMENT";
     $fields[] = "team_id VARCHAR(255) NOT NULL";
@@ -60,6 +62,32 @@ class Update_0_0_1 extends UpdateBase {
     $fields[] = "step VARCHAR(255) NOT NULL";
     $fields[] = "extra LONGTEXT NOT NULL";
     $queries[] = static::createTableStatement(ActionState::$db_table, ActionState::$primary_key, $fields);
+
+    // Create table for Map.
+    $fields = array();
+    $fields[] = "mapid INT(11) UNSIGNED AUTO_INCREMENT";
+    $fields[] = "season_id INT(10) UNSIGNED NOT NULL";
+    $fields[] = "created INT(10) UNSIGNED NOT NULL";
+    $queries[] = static::createTableStatement(Map::$db_table, Map::$primary_key, $fields);
+
+    // Create table for Location.
+    $fields = array();
+    $fields[] = "locid INT(11) UNSIGNED AUTO_INCREMENT";
+    $fields[] = "map_id INT(11) UNSIGNED NOT NULL";
+    $fields[] = "team_id INT(11) UNSIGNED NOT NULL";
+    $fields[] = "guild_id INT(11) UNSIGNED NOT NULL";
+    $fields[] = "name VARCHAR(255) NOT NULL";
+    $fields[] = "row INT(10) UNSIGNED NOT NULL";
+    $fields[] = "col INT(10) UNSIGNED NOT NULL";
+    $fields[] = "type VARCHAR(255) NOT NULL";
+    $fields[] = "created INT(10) UNSIGNED NOT NULL";
+    $fields[] = "revealed TINYINT(1) NOT NULL";
+    $fields[] = "open TINYINT(1) NOT NULL";
+    $fields[] = "star_min INT(10) UNSIGNED NOT NULL";
+    $fields[] = "star_max INT(10) UNSIGNED NOT NULL";
+    $fields[] = "keywords VARCHAR(255) NOT NULL";
+    $fields[] = "map_icon VARCHAR(255) NOT NULL";
+    $queries[] = static::createTableStatement(Location::$db_table, Location::$primary_key, $fields);
 
     return $queries;
   }

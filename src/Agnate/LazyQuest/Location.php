@@ -2,6 +2,9 @@
 
 namespace Agnate\LazyQuest;
 
+use \Agnate\LazyQuest\Data\FormatData;
+use \Agnate\LazyQuest\Data\RandomData;
+
 class Location extends Entity {
 
   public $locid;
@@ -94,12 +97,12 @@ class Location extends Entity {
    *    C - Coordinate name (example: A4)
    *    N - Location name, if available (empty locations have no name)
    */
-  public function display ($pattern = "`C` N") {
+  public function display ($pattern = "`C` N", $info = []) {
     // Set the replacement information.
-    $info = [
+    $info = array_merge($info, [
       'C' => $this->getCoordName(),
       'N' => $this->name,
-    ];
+    ]);
 
     return parent::display($pattern, $info);
   }
@@ -420,8 +423,9 @@ class Location extends Entity {
 
     // Create location.
     $location = new Location ([
-      'mapid' => $map->mapid,
-      'gid' => 0,
+      'map_id' => $map->mapid,
+      'team_id' => $map->getTeam()->tid,
+      'guild_id' => 0,
       'row' => $row,
       'col' => $col,
       'type' => $type,

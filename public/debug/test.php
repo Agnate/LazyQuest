@@ -5,12 +5,25 @@ require_once('../../bootstrap.php');
 use Kint;
 
 
-use Agnate\LazyQuest\App;
-use Agnate\LazyQuest\Data\FormatData;
+use Agnate\LazyQuest\Team;
+use Agnate\LazyQuest\Season;
 
-App::cache()->cache->flush();
 
-App::start();
+$team = Team::load(array('team_id' => 'T025KTDB7'));
+
+// d($team);
+
+$season = Season::startNewSeason($team);
+
+d($season);
+
+
+// use Agnate\LazyQuest\App;
+// use Agnate\LazyQuest\Data\FormatData;
+
+// App::cache()->cache->flush();
+
+// App::start();
 
 // $tokens = App::tokens();
 // d($tokens);

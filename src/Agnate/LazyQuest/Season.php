@@ -92,7 +92,7 @@ class Season extends Entity {
 
     // Create new Map instance.
     $map = new Map ([
-      'season' => $season->sid,
+      'season_id' => $season->sid,
       'created' => $time,
     ]);
 

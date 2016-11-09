@@ -33,13 +33,13 @@ class Guild extends Entity {
    *    N - Guild name
    *    I - Guild icon
    */
-  public function display ($pattern = "I *N*") {
+  public function display ($pattern = "I *N*", $info = []) {
     // Set the replacement information.
-    $info = [
+    $info = array_merge($info, [
       'U' => '@' . $this->username,
       'N' => $this->name,
       'I' => $this->icon,
-    ];
+    ]);
 
     return parent::display($pattern, $info);
   }

@@ -46,7 +46,7 @@ class Map extends Entity {
    * Load all Location instances related to this Map.
    */
   public function loadLocations () {
-    $this->_locations = Location::load_multiple(['mapid' => $this->mapid]);
+    $this->_locations = Location::loadMultiple(['mapid' => $this->mapid]);
   }
 
   /**
@@ -72,6 +72,15 @@ class Map extends Entity {
   public function getCapital () {
     if (empty($this->_capital)) $this->loadCapital();
     return $this->_capital;
+  }
+
+  /**
+   * Get the Team this Map is for.
+   */
+  public function getTeam () {
+    $season = $this->getRelationship('season_id');
+    if (empty($season)) return FALSE;
+    return $season->getRelationship('team_id');
   }
 
   /**
@@ -109,8 +118,9 @@ class Map extends Entity {
     $capital_col = Map::CAPITAL_START_COL;
 
     $capital_data = [
-      'mapid' => $this->mapid,
-      'gid' => 0,
+      'map_id' => $this->mapid,
+      'team_id' => $this->getTeam()->tid,
+      'guild_id' => 0,
       'name' => 'The Capital',
       'row' => $capital_row,
       'col' => $capital_col,
